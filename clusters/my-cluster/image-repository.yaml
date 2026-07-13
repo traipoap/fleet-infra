@@ -1,0 +1,22 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: dev-frontend
+  namespace: flux-system
+spec:
+  image: ghcr.io/traipoap/frontend
+  interval: 1m0s
+  secretRef:
+    name: github-registry
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: dev-backend
+  namespace: flux-system
+spec:
+  image: ghcr.io/traipoap/backend
+  interval: 1m0s
+  secretRef:
+    name: github-registry

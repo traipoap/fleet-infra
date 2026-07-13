@@ -1,0 +1,29 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageUpdateAutomation
+metadata:
+  name: app-dev-updater
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: app
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        name: github-actions[bot]
+        email: github-actions[bot]@users.noreply.github.com
+      messageTemplate: |
+        chore: auto-update image tag
+
+        {{ range .Changed.Objects -}}
+        - {{ .Kind }}/{{ .Name }}: {{ .OldValue }} -> {{ .NewValue }}
+        {{ end -}}
+    push:
+      branch: main
+  update:
+    path: ./k8s/overlays/development
+    strategy: Setters

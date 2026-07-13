@@ -1,0 +1,23 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: frontend-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: dev-frontend  # deployment name
+  policy:
+    semver:
+      range: "*"
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: backend-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: dev-backend  # deployment name
+  policy:
+    semver:
+      range: "*"
