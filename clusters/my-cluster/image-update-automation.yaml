@@ -25,5 +25,5 @@ spec:
     push:
       branch: main
   update:
-    path: ./k8s/overlays/development
+    path: ./k8s/base
     strategy: Setters
