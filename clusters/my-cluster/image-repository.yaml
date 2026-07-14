@@ -1,7 +1,7 @@
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:
-  name: dev-frontend
+  name: frontend
   namespace: flux-system
 spec:
   image: ghcr.io/traipoap/frontend
@@ -13,7 +13,7 @@ spec:
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:
-  name: dev-backend
+  name: backend
   namespace: flux-system
 spec:
   image: ghcr.io/traipoap/backend
