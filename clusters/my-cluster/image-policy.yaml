@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   imageRepositoryRef:
-    name: dev-frontend  # deployment name
+    name: frontend  # deployment name
   policy:
     semver:
       range: "*"
@@ -17,7 +17,7 @@ metadata:
   namespace: flux-system
 spec:
   imageRepositoryRef:
-    name: dev-backend  # deployment name
+    name: backend  # deployment name
   policy:
     semver:
       range: "*"
