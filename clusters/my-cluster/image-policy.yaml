@@ -4,6 +4,8 @@ metadata:
   name: frontend-policy
   namespace: flux-system
 spec:
+  secretRef:
+    name: app-git-secret
   imageRepositoryRef:
     name: frontend  # deployment name
   policy:            # <--- ต้องมี colon
@@ -16,6 +18,8 @@ metadata:
   name: backend-policy
   namespace: flux-system
 spec:
+  secretRef:
+    name: app-git-secret
   imageRepositoryRef:
     name: backend  # deployment name
   policy:            # <--- ต้องมี colon
