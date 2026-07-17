@@ -4,8 +4,6 @@ metadata:
   name: app-dev-updater
   namespace: flux-system
 spec:
-  secretRef:
-    name: app-git-secret
   interval: 1m0s
   sourceRef:
     kind: GitRepository
