@@ -6,7 +6,7 @@ metadata:
 spec:
   imageRepositoryRef:
     name: frontend  # deployment name
-  policy:            # <--- ต้องมี colon
+  policy:
     semver:          # <--- ต้องเยื้องใต้ policy
       range: ">=0.0.0" # <--- เปลี่ยนเป็น >=0.0.0 เพื่อรับ tag 0.0.x จาก GitHub Actions
 ---
@@ -18,6 +18,6 @@ metadata:
 spec:
   imageRepositoryRef:
     name: backend  # deployment name
-  policy:            # <--- ต้องมี colon
+  policy:
     semver:          # <--- ต้องเยื้องใต้ policy
       range: ">=0.0.0" # <--- เปลี่ยนเป็น >=0.0.0 เพื่อรับ tag 0.0.x จาก GitHub Actions
