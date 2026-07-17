@@ -7,7 +7,7 @@ spec:
   image: ghcr.io/traipoap/frontend
   interval: 1m0s
   secretRef:
-    name: flux-system
+    name: app-git-secret
     
 ---
 apiVersion: image.toolkit.fluxcd.io/v1
@@ -19,4 +19,4 @@ spec:
   image: ghcr.io/traipoap/backend
   interval: 1m0s
   secretRef:
-    name: flux-system
+    name: app-git-secret
