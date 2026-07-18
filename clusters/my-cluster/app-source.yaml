@@ -8,6 +8,4 @@ spec:
   interval: 1m0s
   ref:
     branch: main
-  url: ssh://git@github.com/traipoap/app
-  secretRef:
-    name: flux-system
+  url: https://github.com/traipoap/app
