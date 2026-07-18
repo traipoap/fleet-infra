@@ -9,3 +9,5 @@ spec:
   ref:
     branch: main
   url: https://github.com/traipoap/app
+  secretRef:
+    name: flux-system
