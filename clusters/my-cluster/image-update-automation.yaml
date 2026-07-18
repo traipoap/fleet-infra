@@ -15,7 +15,7 @@ spec:
     commit:
       author:
         name: traipoap
-        email: traipoap@users.noreply.github.com
+        email: traipoap@hotmail.com
       messageTemplate: |
         chore: auto-update image tag
 
