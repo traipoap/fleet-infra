@@ -9,6 +9,10 @@ spec:
     kind: GitRepository
     name: app
   git:
+    # ─── เพิ่มบรรทัดด้านล่างนี้ ───
+    secretRef:
+      name: app-git-secret # ชื่อ Secret ที่คุณใส่ Token full access ไว้
+    # ───────────────────────────
     checkout:
       ref:
         branch: main
