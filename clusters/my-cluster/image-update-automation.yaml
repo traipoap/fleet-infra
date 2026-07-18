@@ -9,17 +9,13 @@ spec:
     kind: GitRepository
     name: app
   git:
-    # ─── เพิ่มบรรทัดด้านล่างนี้ ───
-    secretRef:
-      name: app-git-secret # ชื่อ Secret ที่คุณใส่ Token full access ไว้
-    # ───────────────────────────
     checkout:
       ref:
         branch: main
     commit:
       author:
-        name: github-actions[bot]
-        email: github-actions[bot]@users.noreply.github.com
+        name: traipoap
+        email: traipoap@users.noreply.github.com
       messageTemplate: |
         chore: auto-update image tag
 
