@@ -8,6 +8,6 @@ spec:
   interval: 1m0s
   ref:
     branch: main
-  url: https://github.com/traipoap/app.git
+  url: ssh://git@github.com/traipoap/app.git
   secretRef:
     name: app-git-secret
