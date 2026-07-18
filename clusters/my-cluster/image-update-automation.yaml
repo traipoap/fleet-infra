@@ -27,3 +27,5 @@ spec:
   update:
     path: ./k8s/base
     strategy: Setters
+  secretRef:
+    name: app-git-secret
