@@ -1,0 +1,16 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: quickwit
+  namespace: lumina
+spec:
+  interval: 30m0s
+  path: ./infrastructure/logging
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: HelmRepository
+    name: quickwit
+  targetNamespace: lumina
+  timeout: 3m0s
+  wait: true
