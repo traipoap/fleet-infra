@@ -6,13 +6,13 @@ metadata:
   name: vector
   namespace: "lumina"
   labels:
-    helm.sh/chart: vector-0.52.0
+    helm.sh/chart: vector-0.57.0
     app.kubernetes.io/name: vector
     app.kubernetes.io/instance: vector
     app.kubernetes.io/component: Agent
-    app.kubernetes.io/version: "0.55.0-distroless-libc"
+    app.kubernetes.io/version: "0.57.0-distroless-libc"
     app.kubernetes.io/managed-by: Helm
-    
+
 automountServiceAccountToken: true
 
 ---
@@ -23,13 +23,13 @@ metadata:
   name: vector
   namespace: "lumina"
   labels:
-    helm.sh/chart: vector-0.52.0
+    helm.sh/chart: vector-0.57.0
     app.kubernetes.io/name: vector
     app.kubernetes.io/instance: vector
     app.kubernetes.io/component: Agent
-    app.kubernetes.io/version: "0.55.0-distroless-libc"
+    app.kubernetes.io/version: "0.57.0-distroless-libc"
     app.kubernetes.io/managed-by: Helm
-    
+
 data:
   vector.yaml: |
     api:
@@ -75,13 +75,13 @@ data:
         source: |
           # 1. ใช้เวลาที่ Vector รับ log (UTC)
           .vector_time_utc = now()
-    
+
           # 2. เก็บเป็น Unix timestamp แบบ nanoseconds (สำหรับ indexing ใน Quickwit)
           .index_timestamp = to_unix_timestamp(.vector_time_utc, unit: "nanoseconds")
-    
+
           # for quickwit and this worked
           #.event_time = format_timestamp!(.timestamp, format: "%+")
-    
+
           # 3. ลบตัวแปรชั่วคราวออก
           del(.vector_time_utc)
         type: remap
@@ -95,13 +95,13 @@ kind: ClusterRole
 metadata:
   name: vector
   labels:
-    helm.sh/chart: vector-0.52.0
+    helm.sh/chart: vector-0.57.0
     app.kubernetes.io/name: vector
     app.kubernetes.io/instance: vector
     app.kubernetes.io/component: Agent
-    app.kubernetes.io/version: "0.55.0-distroless-libc"
+    app.kubernetes.io/version: "0.57.0-distroless-libc"
     app.kubernetes.io/managed-by: Helm
-    
+
 rules:
   - apiGroups:
       - ""
@@ -119,13 +119,13 @@ kind: ClusterRoleBinding
 metadata:
   name: vector
   labels:
-    helm.sh/chart: vector-0.52.0
+    helm.sh/chart: vector-0.57.0
     app.kubernetes.io/name: vector
     app.kubernetes.io/instance: vector
     app.kubernetes.io/component: Agent
-    app.kubernetes.io/version: "0.55.0-distroless-libc"
+    app.kubernetes.io/version: "0.57.0-distroless-libc"
     app.kubernetes.io/managed-by: Helm
-    
+
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -143,17 +143,17 @@ metadata:
   name: vector-headless
   namespace: "lumina"
   labels:
-    helm.sh/chart: vector-0.52.0
+    helm.sh/chart: vector-0.57.0
     app.kubernetes.io/name: vector
     app.kubernetes.io/instance: vector
     app.kubernetes.io/component: Agent
-    app.kubernetes.io/version: "0.55.0-distroless-libc"
+    app.kubernetes.io/version: "0.57.0-distroless-libc"
     app.kubernetes.io/managed-by: Helm
-    
+
   annotations:
 spec:
   clusterIP: None
-  ports:    
+  ports:
     - name: api
       port: 8686
       protocol: TCP
@@ -181,16 +181,16 @@ metadata:
   name: vector
   namespace: "lumina"
   labels:
-    helm.sh/chart: vector-0.52.0
+    helm.sh/chart: vector-0.57.0
     app.kubernetes.io/name: vector
     app.kubernetes.io/instance: vector
     app.kubernetes.io/component: Agent
-    app.kubernetes.io/version: "0.55.0-distroless-libc"
+    app.kubernetes.io/version: "0.57.0-distroless-libc"
     app.kubernetes.io/managed-by: Helm
-    
+
   annotations:
 spec:
-  ports:    
+  ports:
     - name: api
       port: 8686
       protocol: TCP
@@ -217,13 +217,13 @@ metadata:
   name: vector
   namespace: "lumina"
   labels:
-    helm.sh/chart: vector-0.52.0
+    helm.sh/chart: vector-0.57.0
     app.kubernetes.io/name: vector
     app.kubernetes.io/instance: vector
     app.kubernetes.io/component: Agent
-    app.kubernetes.io/version: "0.55.0-distroless-libc"
+    app.kubernetes.io/version: "0.57.0-distroless-libc"
     app.kubernetes.io/managed-by: Helm
-    
+
 spec:
   selector:
     matchLabels:
@@ -245,7 +245,7 @@ spec:
       dnsPolicy: ClusterFirst
       containers:
         - name: vector
-          image: "docker.io/timberio/vector:0.55.0-distroless-libc"
+          image: "docker.io/timberio/vector:0.57.0-distroless-libc"
           imagePullPolicy: IfNotPresent
           args:
             - --config-dir
@@ -269,7 +269,7 @@ spec:
               value: "/host/proc"
             - name: SYSFS_ROOT
               value: "/host/sys"
-          ports:      
+          ports:
             - name: api
               containerPort: 8686
               protocol: TCP
