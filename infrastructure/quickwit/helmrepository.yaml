@@ -1,0 +1,6 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: quickwit
+spec:
+  url: https://helm.quickwit.io/
