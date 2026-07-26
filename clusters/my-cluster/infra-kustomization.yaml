@@ -1,0 +1,18 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra
+  namespace: lumina
+spec:
+  interval: 30m0s
+  path: ./infrastructure
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: GitRepository
+    name: infra
+    namespace: flux-system
+  targetNamespace: lumina
+
+  timeout: 3m0s
+  wait: true

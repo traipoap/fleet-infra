@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: quickwit-create-index
+  namespace: flux-system
+spec:
+  backoffLimit: 5
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: create-index
+          image: curlimages/curl:latest
+          args:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for Quickwit to be ready..."
+              until curl -s http://quickwit-searcher:7280/api/v1/version; do
+                sleep 5;
+              done
+
+              echo "Creating index..."
+              if ! curl -s -f http://quickwit-searcher:7280/api/v1/indexes/app-logs > /dev/null; then
+                curl -X POST http://quickwit-searcher:7280/api/v1/indexes \
+                  -H "Content-Type: application/yaml" \
+                  -d @/config/quickwit.yaml
+                echo "Index created successfully."
+              else
+                echo "Index already exists, skipping."
+              fi
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: quickwit-indexer
