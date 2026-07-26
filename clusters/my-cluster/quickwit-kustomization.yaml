@@ -9,7 +9,7 @@ spec:
   prune: true
   retryInterval: 2m0s
   sourceRef:
-    kind: HelmRepository
+    kind: GitRepository
     name: quickwit
   targetNamespace: lumina
   timeout: 3m0s
