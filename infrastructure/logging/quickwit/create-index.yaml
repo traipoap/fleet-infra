@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: quickwit-create-index
-  namespace: flux-system
+  namespace: lumina
 spec:
   backoffLimit: 5
   ttlSecondsAfterFinished: 100
