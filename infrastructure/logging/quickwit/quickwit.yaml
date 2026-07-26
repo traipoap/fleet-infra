@@ -5,7 +5,7 @@ kind: ServiceAccount
 metadata:
   name: quickwit
   labels:
-    helm.sh/chart: quickwit-0.8.4
+    helm.sh/chart: quickwit-0.8.12
     app.kubernetes.io/name: quickwit
     app.kubernetes.io/instance: quickwit
     app.kubernetes.io/version: "v0.8.2"
@@ -18,7 +18,7 @@ kind: ConfigMap
 metadata:
   name: quickwit
   labels:
-    helm.sh/chart: quickwit-0.8.4
+    helm.sh/chart: quickwit-0.8.12
     app.kubernetes.io/name: quickwit
     app.kubernetes.io/instance: quickwit
     app.kubernetes.io/version: "v0.8.2"
@@ -46,7 +46,7 @@ kind: Service
 metadata:
   name: quickwit-searcher
   labels:
-    helm.sh/chart: quickwit-0.8.4
+    helm.sh/chart: quickwit-0.8.12
     app.kubernetes.io/name: quickwit
     app.kubernetes.io/instance: quickwit
     app.kubernetes.io/version: "v0.8.2"
@@ -73,7 +73,7 @@ kind: Service
 metadata:
   name: quickwit-headless
   labels:
-    helm.sh/chart: quickwit-0.8.4
+    helm.sh/chart: quickwit-0.8.12
     app.kubernetes.io/name: quickwit
     app.kubernetes.io/instance: quickwit
     app.kubernetes.io/version: "v0.8.2"
@@ -106,7 +106,7 @@ kind: Service
 metadata:
   name: quickwit-indexer
   labels:
-    helm.sh/chart: quickwit-0.8.4
+    helm.sh/chart: quickwit-0.8.12
     app.kubernetes.io/name: quickwit
     app.kubernetes.io/instance: quickwit
     app.kubernetes.io/version: "v0.8.2"
@@ -133,7 +133,7 @@ kind: Service
 metadata:
   name: quickwit-metastore
   labels:
-    helm.sh/chart: quickwit-0.8.4
+    helm.sh/chart: quickwit-0.8.12
     app.kubernetes.io/name: quickwit
     app.kubernetes.io/instance: quickwit
     app.kubernetes.io/version: "v0.8.2"
@@ -160,7 +160,7 @@ kind: Service
 metadata:
   name: quickwit-control-plane
   labels:
-    helm.sh/chart: quickwit-0.8.4
+    helm.sh/chart: quickwit-0.8.12
     app.kubernetes.io/name: quickwit
     app.kubernetes.io/instance: quickwit
     app.kubernetes.io/version: "v0.8.2"
@@ -187,7 +187,7 @@ kind: Service
 metadata:
   name: quickwit-janitor
   labels:
-    helm.sh/chart: quickwit-0.8.4
+    helm.sh/chart: quickwit-0.8.12
     app.kubernetes.io/name: quickwit
     app.kubernetes.io/instance: quickwit
     app.kubernetes.io/version: "v0.8.2"
@@ -215,7 +215,7 @@ kind: Deployment
 metadata:
   name: quickwit-control-plane
   labels:
-    helm.sh/chart: quickwit-0.8.4
+    helm.sh/chart: quickwit-0.8.12
     app.kubernetes.io/name: quickwit
     app.kubernetes.io/instance: quickwit
     app.kubernetes.io/version: "v0.8.2"
@@ -235,7 +235,7 @@ spec:
       annotations:
         checksum/config: 816af5213d5f83a893136606ed19b5c04cb6fe2bad31dbc0e24fe77ac60c2ecf
       labels:
-        
+
         app.kubernetes.io/name: quickwit
         app.kubernetes.io/instance: quickwit
         app.kubernetes.io/component: control-plane
@@ -326,7 +326,7 @@ kind: Deployment
 metadata:
   name: quickwit-janitor
   labels:
-    helm.sh/chart: quickwit-0.8.4
+    helm.sh/chart: quickwit-0.8.12
     app.kubernetes.io/name: quickwit
     app.kubernetes.io/instance: quickwit
     app.kubernetes.io/version: "v0.8.2"
@@ -346,7 +346,7 @@ spec:
       annotations:
         checksum/config: 816af5213d5f83a893136606ed19b5c04cb6fe2bad31dbc0e24fe77ac60c2ecf
       labels:
-        
+
         app.kubernetes.io/name: quickwit
         app.kubernetes.io/instance: quickwit
         app.kubernetes.io/component: janitor
@@ -438,7 +438,7 @@ kind: Deployment
 metadata:
   name: quickwit-metastore
   labels:
-    helm.sh/chart: quickwit-0.8.4
+    helm.sh/chart: quickwit-0.8.12
     app.kubernetes.io/name: quickwit
     app.kubernetes.io/instance: quickwit
     app.kubernetes.io/version: "v0.8.2"
@@ -458,7 +458,7 @@ spec:
       annotations:
         checksum/config: 816af5213d5f83a893136606ed19b5c04cb6fe2bad31dbc0e24fe77ac60c2ecf
       labels:
-        
+
         app.kubernetes.io/name: quickwit
         app.kubernetes.io/instance: quickwit
         app.kubernetes.io/component: metastore
@@ -550,7 +550,7 @@ kind: StatefulSet
 metadata:
   name: quickwit-indexer
   labels:
-    helm.sh/chart: quickwit-0.8.4
+    helm.sh/chart: quickwit-0.8.12
     app.kubernetes.io/name: quickwit
     app.kubernetes.io/instance: quickwit
     app.kubernetes.io/version: "v0.8.2"
@@ -572,7 +572,7 @@ spec:
       annotations:
         checksum/config: 816af5213d5f83a893136606ed19b5c04cb6fe2bad31dbc0e24fe77ac60c2ecf
       labels:
-        
+
         app.kubernetes.io/name: quickwit
         app.kubernetes.io/instance: quickwit
         app.kubernetes.io/component: indexer
@@ -664,7 +664,7 @@ kind: StatefulSet
 metadata:
   name: quickwit-searcher
   labels:
-    helm.sh/chart: quickwit-0.8.4
+    helm.sh/chart: quickwit-0.8.12
     app.kubernetes.io/name: quickwit
     app.kubernetes.io/instance: quickwit
     app.kubernetes.io/version: "v0.8.2"
@@ -686,7 +686,7 @@ spec:
       annotations:
         checksum/config: 816af5213d5f83a893136606ed19b5c04cb6fe2bad31dbc0e24fe77ac60c2ecf
       labels:
-        
+
         app.kubernetes.io/name: quickwit
         app.kubernetes.io/instance: quickwit
         app.kubernetes.io/component: searcher

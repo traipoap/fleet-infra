@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30m0s
-  path: ./infrastructure
+  path: ./infrastructure/logging
   prune: true
   retryInterval: 2m0s
   sourceRef:
