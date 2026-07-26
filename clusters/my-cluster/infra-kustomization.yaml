@@ -10,7 +10,7 @@ spec:
   retryInterval: 2m0s
   sourceRef:
     kind: GitRepository
-    name: infra
+    name: flux-system
   targetNamespace: lumina
   timeout: 3m0s
   wait: true
