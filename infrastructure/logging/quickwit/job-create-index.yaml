@@ -21,14 +21,27 @@ spec:
                 sleep 5;
               done
 
-              echo "Creating index..."
-              if ! curl -s -f http://quickwit-searcher:7280/api/v1/indexes/app-logs > /dev/null; then
-                curl -X POST http://quickwit-searcher:7280/api/v1/indexes \
-                  -H "Content-Type: application/yaml" \
-                  -d @/config/quickwit.yaml
+              echo "Checking if index 'app-logs' exists..."
+              # เช็คว่ามี index หรือยัง (ใช้ -f เพื่อ return error code ถ้าไม่พบ)
+              if curl -s -f http://quickwit-searcher:7280/api/v1/indexes/app-logs > /dev/null 2>&1; then
+                echo "Index already exists, skipping creation."
+                exit 0  # <--- สำคัญ: ออกจากสคริปต์ทันที ถ้ามีอยู่แล้ว ไม่ต้องทำต่อ
+              fi
+
+              echo "Index not found. Creating index..."
+              # ส่งคำขอสร้างเท่านั้น ถ้าไม่มี
+              RESPONSE=$(curl -s -w "\n%{http_code}" -X POST http://quickwit-searcher:7280/api/v1/indexes \
+                -H "Content-Type: application/yaml" \
+                -d @/config/quickwit.yaml)
+
+              HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+              BODY=$(echo "$RESPONSE" | sed '$d')
+
+              if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ]; then
                 echo "Index created successfully."
               else
-                echo "Index already exists, skipping."
+                echo "Failed to create index: $BODY"
+                exit 1 # ให้ Job ล้มเหลวถ้าสร้างไม่สำเร็จ เพื่อจะได้ Retry
               fi
           volumeMounts:
             - name: config-volume
