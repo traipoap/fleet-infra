@@ -1,9 +1,13 @@
 ---
-apiVersion: source.toolkit.fluxcd.io/v2
-kind: HelmRepository
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
 metadata:
   name: quickwit
-  namespace: lumina
+  namespace: flux-system
 spec:
-  interval: 30m0s
-  url: https://helm.quickwit.io/
+  interval: 1m0s
+  ref:
+    branch: main
+  url: https://github.com/traipoap/app.git
+  secretRef:
+    name: app-git-secret
