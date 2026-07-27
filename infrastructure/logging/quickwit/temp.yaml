@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: temp
+  name: temp
+  namespace: lumina
+spec:
+  containers:
+  - command:
+    - sleep
+    - infinity
+    image: alpine/curl:8.21.0
+    name: temp
+    resources: {}
+    volumeMounts:
+      - name: config-volume
+        mountPath: /config
+  volumes:
+    - name: config-volume
+      configMap:
+        name: quickwit-indexer
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
