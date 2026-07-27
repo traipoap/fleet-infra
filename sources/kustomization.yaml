@@ -5,3 +5,4 @@ resources:
   - git-repo.yaml
   - vector-repo.yaml
   - vector-release.yaml
+  - weave-gitops-dashboard.yaml
