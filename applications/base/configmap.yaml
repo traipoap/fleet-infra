@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lumina-config
+  namespace: lumina
+data:
+  # Frontend configuration
+  FRONTEND_PORT: "4321"
+  NODE_ENV: "development"
+  BACKEND_HOST: "http://dev-backend-svc.lumina.svc.cluster.local"
+  BACKEND_INDEX_PREFIX: "logs"
+  BACKEND_SEARCH_BACKEND: "http://dev-backend-svc.lumina.svc.cluster.local:8080"
+
+  # Backend configuration
+  BACKEND_PORT: "8080"
+  QUICKWIT_URL: "http://quickwit-searcher.lumina.svc.cluster.local:7280"
+
+  # Elasticsearch connection (if used)
+  ELASTICSEARCH_HOST: "elasticsearch"
+  ELASTICSEARCH_PORT: "9200"
+
+  # JWT settings
+  JWT_SECRET: "CHANGEME"
+  JWT_EXPIRES_IN: "24h"
+
+  # Resource limits
+  MEMORY_LIMIT: "512Mi"
+  CPU_LIMIT: "500m"
