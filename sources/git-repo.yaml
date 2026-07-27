@@ -39,7 +39,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30m0s
-  path: ./infrastructure/logging/quickwit
+  path: ./infrastructure
   prune: true
   retryInterval: 2m0s
   sourceRef:
