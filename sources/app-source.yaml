@@ -26,6 +26,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: app
+    namespace: flux-system
   targetNamespace: lumina
   timeout: 3m0s
   wait: true

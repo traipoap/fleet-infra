@@ -21,15 +21,13 @@ spec:
                 sleep 5;
               done
 
-              echo "Checking if index 'app-logs' exists..."
-              # เช็คว่ามี index หรือยัง (ใช้ -f เพื่อ return error code ถ้าไม่พบ)
-              if curl -s -f http://quickwit-searcher:7280/api/v1/indexes/app-logs > /dev/null 2>&1; then
+              echo "Checking if index 'syslogs' exists..."
+              if curl -s -f http://quickwit-searcher:7280/api/v1/indexes/syslogs > /dev/null 2>&1; then
                 echo "Index already exists, skipping creation."
-                exit 0  # <--- สำคัญ: ออกจากสคริปต์ทันที ถ้ามีอยู่แล้ว ไม่ต้องทำต่อ
+                exit 0  # <--- ออกจากสคริปต์ทันที: ถ้ามี syslogs indexes อยู่แล้ว
               fi
 
               echo "Index not found. Creating index..."
-              # ส่งคำขอสร้างเท่านั้น ถ้าไม่มี
               RESPONSE=$(curl -s -w "\n%{http_code}" -X POST http://quickwit-searcher:7280/api/v1/indexes \
                 -H "Content-Type: application/yaml" \
                 -d @/config/quickwit.yaml)
