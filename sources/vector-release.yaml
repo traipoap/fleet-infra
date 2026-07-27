@@ -12,6 +12,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: vector-repo
+    targetNamespace: lumina
 
   interval: 1m0s
 
