@@ -10,7 +10,7 @@ spec:
       reconcileStrategy: ChartVersion
       sourceRef:
         kind: HelmRepository
-        name: vector
+        name: vector-repo
   interval: 1m0s
 
   values:
