@@ -29,8 +29,8 @@ spec:
 
               echo "Index not found. Creating index..."
               RESPONSE=$(curl -s -w "\n%{http_code}" -X POST http://quickwit-searcher:7280/api/v1/indexes \
-                -H "Content-Type: application/yaml" \
-                -d @/config/quickwit.yaml)
+                --header "content-type: application/yaml" \
+                --data-binary @/config/quickwit.yaml)
 
               HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
               BODY=$(echo "$RESPONSE" | sed '$d')
