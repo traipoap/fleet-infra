@@ -2,9 +2,8 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: quickwit
-  namespace: flux-system
+  name: vector
 spec:
   interval: 1m0s
   provider: generic
-  url: https://helm.quickwit.io
+  url: https://helm.vector.dev
