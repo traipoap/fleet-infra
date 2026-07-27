@@ -1,5 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- quickwit.yaml
+- quickwit-repo.yaml
 - job-create-index.yaml
+- quickwit-indexer.yaml

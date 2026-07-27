@@ -1,0 +1,67 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quickwit-indexer
+  namespace: lumina
+data:
+  quickwit.yaml: |-
+    # Index config file for firewall-index dataset.
+    version: 0.8
+
+    index_id: syslogs
+
+    # ใช้ prefix ช่วยจัดการ index หลายตัว
+    # tags: [firewall, syslog]
+
+    doc_mapping:
+      field_mappings:
+        - name: source_ip
+          type: ip
+          stored: true
+          indexed: true
+          fast: true # ✅ เพิ่ม fast field สำหรับ filter และ aggregation เร็วขึ้น
+          description: "Source IP address of the connection"
+
+        - name: message
+          type: text
+          tokenizer: default
+          record: position
+          stored: true
+          indexed: true
+          # ใช้ compression ดีกว่า
+          fieldnorms: false # ❌ ปิด field norms → ลด storage (ไม่จำเป็นสำหรับ log)
+          description: "Log message content"
+
+        - name: timestamp
+          type: datetime
+          input_formats:
+            - rfc3339
+          output_format: unix_timestamp_millis # ใช้ millisecond สำหรับแสดงผล
+          fast: true
+          fast_precision: milliseconds # ✅ เพิ่ม precision → ดีต่อ sort/search_after
+          stored: true
+          description: "Event time (when it happened)"
+
+        - name: index_timestamp
+          type: datetime
+          input_formats:
+            - unix_timestamp
+          output_format: unix_timestamp_nanos
+          fast: true
+          fast_precision: nanoseconds # ✅ ใช้ nanosecond precision สำหรับ ordering ละเอียด
+          stored: true
+          description: "Timestamp when the event was ingested by Vector"
+
+      # ใช้ timestamp หลักสำหรับ time-based operations (retention, slicing)
+      timestamp_field: timestamp
+
+    search_settings:
+      default_search_fields: [source_ip, message] # full-text search
+
+    indexing_settings:
+      commit_timeout_secs: 30
+
+    retention:
+      period: 90 days
+      schedule: daily
