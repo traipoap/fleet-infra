@@ -9,7 +9,7 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: vector-repo
-
+  namespace: lumina
 spec:
   interval: 1m0s
   provider: generic
