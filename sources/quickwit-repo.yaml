@@ -1,0 +1,10 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: quickwit-repo
+  namespace: lumina
+spec:
+  interval: 1m0s
+  timeout: 3m0s
+  url: https://helm.quickwit.io
