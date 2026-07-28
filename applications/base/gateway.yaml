@@ -11,14 +11,15 @@ spec:
   - name: http
     protocol: HTTP
     port: 80
-    hostname: "frontend.codezap.win"
+    hostname: "*"
     allowedRoutes:
       namespaces:
         from: "All"
+
   - name: https
     protocol: HTTPS
     port: 443
-    hostname: "frontend.codezap.win"
+    hostname: "*"
     tls:
       mode: Terminate
       certificateRefs:
