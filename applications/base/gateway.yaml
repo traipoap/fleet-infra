@@ -3,6 +3,8 @@ kind: Gateway
 metadata:
   name: frontend-gateway
   namespace: lumina
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   gatewayClassName: istio
   listeners:
@@ -20,3 +22,7 @@ spec:
     allowedRoutes:
       namespaces:
         from: "All"
+    tls:
+      mode: SIMPLE
+      certificateRef:
+        name: gateway-tls
