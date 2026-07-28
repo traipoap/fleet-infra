@@ -7,3 +7,4 @@ resources:
   - ../infrastructure/
   - git-repo.yaml
   - weave-gitops-dashboard.yaml
+  - nfs-repo.yaml
