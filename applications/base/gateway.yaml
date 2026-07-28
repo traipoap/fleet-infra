@@ -19,10 +19,10 @@ spec:
     protocol: HTTPS
     port: 443
     hostname: "frontend.codezap.win"
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: selfsigned-cert
     allowedRoutes:
       namespaces:
         from: "All"
-    tls:
-      mode: SIMPLE
-      certificateRef:
-        name: selfsigned-cert
