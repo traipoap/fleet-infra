@@ -6,5 +6,5 @@ metadata:
   namespace: lumina
 spec:
   interval: 1m0s
-  provider: generic
+  timeout: 3m0s
   url: https://helm.vector.dev
