@@ -27,14 +27,14 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /task/indices
+        value: /api/indices
     backendRefs:
     - name: backend-svc
       port: 8080
   - matches:
     - path:
         type: PathPrefix
-        value: /task/search
+        value: /api/search
     backendRefs:
     - name: backend-svc
       port: 8080
