@@ -25,4 +25,4 @@ spec:
     tls:
       mode: SIMPLE
       certificateRef:
-        name: gateway-tls
+        name: selfsigned-cert
