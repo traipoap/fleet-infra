@@ -4,7 +4,7 @@ metadata:
   name: frontend-gateway
   namespace: lumina
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   gatewayClassName: istio
   listeners:
@@ -22,7 +22,8 @@ spec:
     tls:
       mode: Terminate
       certificateRefs:
-      - name: selfsigned-cert
+      - name: frontend-codezap-win-tls
+        kind: Secret
     allowedRoutes:
       namespaces:
-        from: "All"
+        from: All
