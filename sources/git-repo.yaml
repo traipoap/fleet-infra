@@ -30,3 +30,9 @@ spec:
   targetNamespace: lumina
   timeout: 3m0s
   wait: true
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lumina
