@@ -5,6 +5,7 @@ metadata:
   name: lumina
   labels:
     istio.io/dataplane-mode: ambient
+    name: lumina
 
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
