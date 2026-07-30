@@ -4,7 +4,7 @@ metadata:
   name: frontend-gateway
   namespace: lumina
   annotations:
-    cert-manager.io/cluster-issuer: "selfsigned-issuer"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   gatewayClassName: istio
   listeners:
