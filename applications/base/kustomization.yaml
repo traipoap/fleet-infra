@@ -12,4 +12,3 @@ resources:
   - gateway.yaml
   - httproute.yaml
   - github-registry.yaml
-  - label-ambient.yaml
