@@ -62,3 +62,228 @@ patches:
                 index: 'syslogs'
                 logMessageField: message
                 logLevelField: ""
+
+  - target:
+      kind: ConfigMap
+      name: grafana
+    patch: |-
+      - op: add
+        path: /data/devops-quickwit-dashboard.json
+        value: |
+          {
+            "annotations": {
+              "list": [
+                {
+                  "builtIn": 1,
+                  "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                  },
+                  "enable": true,
+                  "hide": true,
+                  "iconColor": "rgba(0, 211, 255, 1)",
+                  "name": "Annotations & Alerts",
+                  "type": "dashboard"
+                }
+              ]
+            },
+            "editable": true,
+            "fiscalYearStartMonth": 0,
+            "graphTooltip": 0,
+            "id": 9,
+            "links": [],
+            "panels": [
+              {
+                "datasource": {
+                  "type": "quickwit-quickwit-datasource",
+                  "uid": "P26ECA1327286EFEC"
+                },
+                "fieldConfig": {
+                  "defaults": {
+                    "color": {
+                      "mode": "palette-classic"
+                    },
+                    "custom": {
+                      "axisBorderShow": false,
+                      "axisCenteredZero": false,
+                      "axisColorMode": "text",
+                      "axisLabel": "",
+                      "axisPlacement": "auto",
+                      "barAlignment": 0,
+                      "barWidthFactor": 0.6,
+                      "drawStyle": "line",
+                      "fillOpacity": 25,
+                      "gradientMode": "none",
+                      "hideFrom": {
+                        "legend": false,
+                        "tooltip": false,
+                        "viz": false
+                      },
+                      "insertNulls": false,
+                      "lineInterpolation": "linear",
+                      "lineWidth": 1,
+                      "pointSize": 5,
+                      "scaleDistribution": {
+                        "type": "linear"
+                      },
+                      "showPoints": "auto",
+                      "showValues": false,
+                      "spanNulls": false,
+                      "stacking": {
+                        "group": "A",
+                        "mode": "none"
+                      },
+                      "thresholdsStyle": {
+                        "mode": "off"
+                      }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": 0
+                        },
+                        {
+                          "color": "red",
+                          "value": 80
+                        }
+                      ]
+                    }
+                  },
+                  "overrides": []
+                },
+                "gridPos": {
+                  "h": 6,
+                  "w": 24,
+                  "x": 0,
+                  "y": 0
+                },
+                "id": 2,
+                "options": {
+                  "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "right",
+                    "showLegend": false
+                  },
+                  "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                  }
+                },
+                "pluginVersion": "12.2.5",
+                "targets": [
+                  {
+                    "alias": "",
+                    "bucketAggs": [
+                      {
+                        "field": "",
+                        "id": "2",
+                        "settings": {
+                          "interval": "auto"
+                        },
+                        "type": "date_histogram"
+                      }
+                    ],
+                    "datasource": {
+                      "type": "quickwit-quickwit-datasource",
+                      "uid": "P26ECA1327286EFEC"
+                    },
+                    "metrics": [
+                      {
+                        "id": "1",
+                        "type": "count"
+                      }
+                    ],
+                    "query": "",
+                    "refId": "Errors",
+                    "timeField": ""
+                  }
+                ],
+                "title": "Event logs",
+                "type": "timeseries"
+              },
+              {
+                "datasource": {
+                  "type": "quickwit-quickwit-datasource",
+                  "uid": "P26ECA1327286EFEC"
+                },
+                "fieldConfig": {
+                  "defaults": {},
+                  "overrides": []
+                },
+                "gridPos": {
+                  "h": 37,
+                  "w": 24,
+                  "x": 0,
+                  "y": 6
+                },
+                "id": 1,
+                "options": {
+                  "dedupStrategy": "none",
+                  "enableInfiniteScrolling": false,
+                  "enableLogDetails": true,
+                  "prettifyLogMessage": false,
+                  "showCommonLabels": false,
+                  "showControls": false,
+                  "showLabels": false,
+                  "showTime": false,
+                  "sortOrder": "Descending",
+                  "wrapLogMessage": false
+                },
+                "pluginVersion": "12.2.5",
+                "targets": [
+                  {
+                    "alias": "",
+                    "bucketAggs": [
+                      {
+                        "field": "",
+                        "id": "2",
+                        "settings": {
+                          "interval": "auto"
+                        },
+                        "type": "date_histogram"
+                      }
+                    ],
+                    "datasource": {
+                      "type": "quickwit-quickwit-datasource",
+                      "uid": "P26ECA1327286EFEC"
+                    },
+                    "metrics": [
+                      {
+                        "id": "1",
+                        "settings": {
+                          "limit": "1000"
+                        },
+                        "type": "logs"
+                      }
+                    ],
+                    "query": "",
+                    "refId": "A",
+                    "timeField": ""
+                  }
+                ],
+                "title": "Service Logs Exploration",
+                "type": "logs"
+              }
+            ],
+            "preload": false,
+            "refresh": "5s",
+            "schemaVersion": 42,
+            "tags": [],
+            "templating": {
+              "list": []
+            },
+            "time": {
+              "from": "now-90d",
+              "to": "now"
+            },
+            "timepicker": {},
+            "timezone": "",
+            "title": "DevOps Logs Observability",
+            "uid": "devops_quickwit_v1",
+            "version": 10
+          }
