@@ -17,7 +17,7 @@ patches:
           value:  "https://github.com/quickwit-oss/quickwit-datasource/releases/download/v0.4.5/quickwit-quickwit-datasource-0.4.5.zip;quickwit-quickwit-datasource"
 
       - op: add
-        path: /spec/template/spec/containers/0/env/-
+        path: /spec/template/spec
         value:
           name: nodeName
           value: k3s-worker-1
