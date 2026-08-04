@@ -5,7 +5,7 @@ resources:
   - https://raw.githubusercontent.com/istio/istio/release-1.30/samples/addons/grafana.yaml
 
 patches:
-  # Patch the Grafana Deployment to install the Quickwit Plugin
+  # 1. Fix Plugin Installation for React 19 (Grafana 12.3+/13)
   - target:
       kind: Deployment
       name: grafana
@@ -13,38 +13,47 @@ patches:
       - op: add
         path: /spec/template/spec/containers/0/env/-
         value:
-          name: GF_INSTALL_PLUGINS
-          value: "https://github.com/quickwit-oss/quickwit-datasource/releases/download/v0.6.3/quickwit-quickwit-datasource-0.6.3.zip;quickwit-quickwit-datasource"
+          name: GF_PLUGINS_PREINSTALL_SYNC
+          # Format: <plugin-id>@<version>@<url>
+          value: "quickwit-quickwit-datasource@0.6.3@https://github.com/quickwit-oss/quickwit-datasource/releases/download/v0.6.3/quickwit-quickwit-datasource-0.6.3.zip"
 
+      # Optional: If Istio's default Grafana image is < 12.3, you MUST upgrade the image here
+      # - op: replace
+      #   path: /spec/template/spec/containers/0/image
+      #   value: grafana/grafana:13.0.0
+
+  # 2. Safely Replace/Create Datasources ConfigMap
   - target:
       kind: ConfigMap
       name: grafana
     patch: |-
-      - op: add
+      - op: replace
         path: /data/datasources.yaml
-        value:
-          - access: proxy
-            editable: true
-            isDefault: true
-            jsonData:
-              timeInterval: 15s
-            name: Prometheus
-            orgId: 1
-            type: prometheus
-            url: http://prometheus:9090
-          - access: proxy
-            editable: true
-            isDefault: false
-            jsonData:
-              timeInterval: 5s
-            name: Loki
-            orgId: 1
-            type: loki
-            url: http://loki:3100
-          - name: Quickwit Logs
-            type: quickwit-quickwit-datasource
-            url: http://quickwit-searcher.lumina.svc.cluster.local:7280/api/v1
-            jsonData:
-              index: 'logs'
-              logMessageField: message
-              logLevelField: severity_text
+        value: |
+          apiVersion: 1
+          datasources:
+            - access: proxy
+              editable: true
+              isDefault: true
+              jsonData:
+                timeInterval: 15s
+              name: Prometheus
+              orgId: 1
+              type: prometheus
+              url: http://prometheus:9090
+            - access: proxy
+              editable: true
+              isDefault: false
+              jsonData:
+                timeInterval: 5s
+              name: Loki
+              orgId: 1
+              type: loki
+              url: http://loki:3100
+            - name: Quickwit Logs
+              type: quickwit-quickwit-datasource
+              url: http://quickwit-searcher.lumina.svc.cluster.local:7280/api/v1
+              jsonData:
+                index: 'logs'
+                logMessageField: message
+                logLevelField: severity_text
