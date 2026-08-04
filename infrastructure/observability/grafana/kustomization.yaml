@@ -14,7 +14,7 @@ patches:
         path: /spec/template/spec/containers/0/env/-
         value:
           name: GF_INSTALL_PLUGINS
-          value:  "https://github.com/quickwit-oss/quickwit-datasource/releases/download/v0.4.5/quickwit-quickwit-datasource-0.4.5.zip;quickwit-quickwit-datasource"
+          value:  "https://github.com/quickwit-oss/quickwit-datasource/releases/download/v0.6.3/quickwit-quickwit-datasource-0.6.3.zip;quickwit-quickwit-datasource"
 
       - op: add
         path: /spec/template/spectemplate/spec
@@ -23,9 +23,9 @@ patches:
           value: k3s-worker-1
 
       # Optional: If Istio's default Grafana image is < 12.3, you MUST upgrade the image here
-      # - op: replace
-      #   path: /spec/template/spec/containers/0/image
-      #   value: grafana/grafana:13.0.0
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: docker.io/grafana/grafana:12.2.5
 
   # 2. Safely Replace/Create Datasources ConfigMap
   - target:
