@@ -10,53 +10,87 @@ metadata:
   name: istio-repo
   namespace: istio-system
 spec:
-  interval: 1m0s
+  interval: 1h
   url: https://istio-release.storage.googleapis.com/charts
 ---
+# 1. Istio Base (CRDs)
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: istio
+  name: istio-base
   namespace: istio-system
 spec:
+  interval: 10m
   chart:
     spec:
-      chart: istio
+      chart: base
       reconcileStrategy: ChartVersion
       sourceRef:
         kind: HelmRepository
         name: istio-repo
         namespace: istio-system
-  interval: 1m0s
-  install:
-    crds: CreateReplace
-  upgrade:
-    crds: CreateReplace
-
-values:
-  profile: ambient
-  meshConfig:
-    accessLogFile: /dev/stdout
-    defaultConfig:
-      proxyMetadata:
-        ISTIO_META_AMBIENT_COMPATIBLE: "true"
 ---
+# 2. Istiod (Control Plane)
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: istiod
+  namespace: istio-system
+spec:
+  interval: 10m
+  dependsOn:
+    - name: istio-base
+  chart:
+    spec:
+      chart: istiod
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: istio-repo
+        namespace: istio-system
+  values:
+    profile: ambient
+    meshConfig:
+      accessLogFile: /dev/stdout
+---
+# 3. Istio CNI (Required for Ambient Traffic Redirection)
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: istio-cni
+  namespace: istio-system
+spec:
+  interval: 10m
+  dependsOn:
+    - name: istiod
+  chart:
+    spec:
+      chart: cni
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: istio-repo
+        namespace: istio-system
+  values:
+    profile: ambient
+---
+# 4. Ztunnel (Node Proxy)
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: ztunnel
   namespace: istio-system
 spec:
-  interval: 30m
+  interval: 10m
   dependsOn:
-    - name: istio-repo
-      namespace: istio-system
+    - name: istio-cni
   chart:
     spec:
       chart: ztunnel
+      reconcileStrategy: ChartVersion
       sourceRef:
         kind: HelmRepository
-        name: istio
+        name: istio-repo
         namespace: istio-system
   values:
     resources:
@@ -64,7 +98,7 @@ spec:
         cpu: 200m
         memory: 512Mi
       limits:
-        cpu: 1
+        cpu: "1"
         memory: 1Gi
     podAnnotations:
       prometheus.io/scrape: "true"
