@@ -17,10 +17,8 @@ patches:
           value:  "https://github.com/quickwit-oss/quickwit-datasource/releases/download/v0.6.3/quickwit-quickwit-datasource-0.6.3.zip;quickwit-quickwit-datasource"
 
       - op: add
-        path: /spec/template/spectemplate/spec
-        value:
-          name: nodeName
-          value: k3s-worker-1
+        path: /spec/template/spec/nodeName
+        value: k3s-worker-1
 
       # Optional: If Istio's default Grafana image is < 12.3, you MUST upgrade the image here
       - op: replace
