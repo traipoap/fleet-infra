@@ -25,6 +25,38 @@ patches:
         path: /spec/template/spec/containers/0/image
         value: docker.io/grafana/grafana:12.2.5
 
+  - target:
+      kind: ConfigMap
+      name: grafana
+    patch: |-
+      - op: replace
+        path: /data/dashboardproviders.yaml
+        value: |
+          apiVersion: 1
+          providers:
+          - disableDeletion: false
+            folder: istio
+            name: istio
+            options:
+              path: /var/lib/grafana/dashboards/istio
+            orgId: 1
+            type: file
+          - disableDeletion: false
+            folder: istio
+            name: istio-services
+            options:
+              path: /var/lib/grafana/dashboards/istio-services
+            orgId: 1
+            type: file
+
+          - disableDeletion: false
+            folder: devops
+            name: devops-quickwit
+            options:
+              path: /var/lib/grafana/dashboards/devops
+            orgId: 1
+            type: file
+
   # 2. Safely Replace/Create Datasources ConfigMap
   - target:
       kind: ConfigMap
@@ -63,7 +95,7 @@ patches:
 
   - target:
       kind: ConfigMap
-      name: grafana
+      name: istio-services-grafana-dashboards
     patch: |-
       - op: add
         path: /data/devops-quickwit-dashboard.json
@@ -81,6 +113,12 @@ patches:
                   "hide": true,
                   "iconColor": "rgba(0, 211, 255, 1)",
                   "name": "Annotations & Alerts",
+                  "target": {
+                    "limit": 100,
+                    "matchAny": false,
+                    "tags": [],
+                    "type": "dashboard"
+                  },
                   "type": "dashboard"
                 }
               ]
@@ -88,7 +126,7 @@ patches:
             "editable": true,
             "fiscalYearStartMonth": 0,
             "graphTooltip": 0,
-            "id": 9,
+            "id": 0,
             "links": [],
             "panels": [
               {
@@ -110,7 +148,7 @@ patches:
                       "barAlignment": 0,
                       "barWidthFactor": 0.6,
                       "drawStyle": "line",
-                      "fillOpacity": 25,
+                      "fillOpacity": 0,
                       "gradientMode": "none",
                       "hideFrom": {
                         "legend": false,
@@ -162,9 +200,9 @@ patches:
                 "options": {
                   "legend": {
                     "calcs": [],
-                    "displayMode": "hidden",
-                    "placement": "right",
-                    "showLegend": false
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
                   },
                   "tooltip": {
                     "hideZeros": false,
@@ -190,6 +228,16 @@ patches:
                       "type": "quickwit-quickwit-datasource",
                       "uid": "P26ECA1327286EFEC"
                     },
+                    "filters": [
+                      {
+                        "filter": {
+                          "key": "",
+                          "operator": "=",
+                          "value": ""
+                        },
+                        "id": "74855927"
+                      }
+                    ],
                     "metrics": [
                       {
                         "id": "1",
@@ -250,11 +298,21 @@ patches:
                       "type": "quickwit-quickwit-datasource",
                       "uid": "P26ECA1327286EFEC"
                     },
+                    "filters": [
+                      {
+                        "filter": {
+                          "key": "",
+                          "operator": "=",
+                          "value": ""
+                        },
+                        "id": "59744831"
+                      }
+                    ],
                     "metrics": [
                       {
                         "id": "1",
                         "settings": {
-                          "limit": "1000"
+                          "limit": "2000"
                         },
                         "type": "logs"
                       }
@@ -283,5 +341,5 @@ patches:
             "timezone": "",
             "title": "DevOps Logs Observability",
             "uid": "devops_quickwit_v1",
-            "version": 10
+            "version": 6
           }
