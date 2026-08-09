@@ -57,6 +57,7 @@ spec:
           inputs:
           - syslog_tcp
           - syslog_udp
+          - kubernetes_logs
           source: |
             # 1. ใช้เวลาที่ Vector รับ log (UTC)
             .vector_time_utc = now()
@@ -72,7 +73,7 @@ spec:
           type: remap
         filter_app_logs:
           inputs:
-          - kubernetes_logs
+          - vector_timestamp
           type: filter
           condition: |
             (.kubernetes.pod_labels.app == "frontend") ||
