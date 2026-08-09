@@ -30,7 +30,6 @@ spec:
           framing:
             method: newline_delimited
           inputs:
-          - vector_timestamp
           - filter_app_logs
           method: post
           type: http
