@@ -30,7 +30,7 @@ spec:
           framing:
             method: newline_delimited
           inputs:
-          - remove_k8s_metadata
+          - filter_app_logs
           method: post
           type: http
           uri: http://quickwit-searcher:7280/api/v1/syslogs/ingest
@@ -78,10 +78,4 @@ spec:
           condition: |
             (.kubernetes.pod_labels.app == "frontend") ||
             (.kubernetes.pod_labels.app == "backend")
-
-        remove_k8s_metadata:
-          type: "remap"
-          inputs: ["filter_app_logs"]
-          source: |
-            del(.kubernetes)
     role: Agent
