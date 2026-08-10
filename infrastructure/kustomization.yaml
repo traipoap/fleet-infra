@@ -4,4 +4,4 @@ resources:
 - logging
 - networking
 - observability
-#- security
+- security
