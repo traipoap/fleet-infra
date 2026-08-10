@@ -12,3 +12,4 @@ resources:
   - gateway.yaml
   - httproute.yaml
   - github-registry.yaml
+  - cert-lumina.yaml
