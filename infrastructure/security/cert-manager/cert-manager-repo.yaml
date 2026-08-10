@@ -3,7 +3,7 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: cert-manager
-  namespace: flux-system
+  namespace: cert-manager
 spec:
   interval: 1m0s
   type: oci
@@ -13,7 +13,7 @@ spec:
   kind: HelmRelease
   metadata:
     name: cert-manager
-    namespace: flux-system
+    namespace: cert-manager
   spec:
     chart:
       spec:
@@ -22,7 +22,7 @@ spec:
         sourceRef:
           kind: HelmRepository
           name: cert-manager
-          namespace: flux-system
+          namespace: cert-manager
         version: 1.12.1
     install:
       createNamespace: true
