@@ -4,5 +4,5 @@ resources:
 - https://github.com/cert-manager/cert-manager/releases/download/v1.21.1/cert-manager.yaml
 #- cert-manager-repo.yaml
 #- cert-manager-release.yaml
-#- cert-manager-config.yaml
+- cert-manager-config.yaml
 namespace: cert-manager
