@@ -23,7 +23,7 @@ spec:
       storage:
         s3:
           access_key_id: YOUR_GARAGE_ACCESS_KEY
-          endpoint: http://192.168.1.4:3900
+          endpoint: http://YOUR_INFRA_IP:3900
           force_path_style_access: true
           region: garage
           secret_access_key: YOUR_GARAGE_SECRET_KEY
