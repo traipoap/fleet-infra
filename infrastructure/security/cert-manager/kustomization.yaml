@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
 - https://github.com/cert-manager/cert-manager/releases/download/v1.21.1/cert-manager.yaml
 - cert-manager-config.yaml
+- cert-lumina.yaml
 namespace: cert-manager
