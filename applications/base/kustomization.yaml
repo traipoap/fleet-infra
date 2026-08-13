@@ -11,4 +11,3 @@ resources:
   - configmap.yaml
   - gateway.yaml
   - httproute.yaml
-  - cert-lumina.yaml
