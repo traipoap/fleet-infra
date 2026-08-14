@@ -32,5 +32,11 @@ spec:
   wait: true
 
   dependsOn:
-    - name: cert-manager
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: cert-manager
+      namespace: cert-manager
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: cert-manager-webhook
       namespace: cert-manager
