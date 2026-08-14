@@ -31,5 +31,5 @@ spec:
   timeout: 3m0s
   wait: true
 
-dependsOn:
-    - name: cert-manager
+  dependsOn:
+      - name: cert-manager
