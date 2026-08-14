@@ -32,7 +32,5 @@ spec:
   wait: true
 
   dependsOn:
-    - name: cert-manager
-      namespace: cert-manager
-    - name: cert-manager-webhook
-      namespace: cert-manager
+    - name: flux-system
+      namespace: flux-system
