@@ -30,3 +30,6 @@ spec:
   targetNamespace: lumina
   timeout: 3m0s
   wait: true
+
+dependsOn:
+    - name: cert-manager
