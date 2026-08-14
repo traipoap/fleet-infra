@@ -38,3 +38,10 @@ spec:
     backendRefs:
     - name: backend-svc
       port: 8080
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/exports
+    backendRefs:
+    - name: backend-svc
+      port: 8080
