@@ -30,11 +30,3 @@ spec:
   targetNamespace: lumina
   timeout: 3m0s
   wait: true
-
-  dependsOn:
-    - name: cert-manager
-      namespace: cert-manager
-    - name: cert-manager-webhook
-      namespace: cert-manager
-    - name: cert-manager-cainjector
-      namespace: cert-manager
