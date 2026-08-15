@@ -57,7 +57,7 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /api/exports/
+        value: /api/exports
     backendRefs:
     - name: backend-svc
       port: 8080
