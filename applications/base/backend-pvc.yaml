@@ -5,7 +5,7 @@ metadata:
   namespace: lumina
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   volumeMode: Block
   resources:
     requests:
