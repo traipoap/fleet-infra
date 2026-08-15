@@ -11,4 +11,5 @@ resources:
   - configmap.yaml
   - gateway.yaml
   - httproute.yaml
+  - backend-pvc.yaml
 #  - cert-lumina.yaml
