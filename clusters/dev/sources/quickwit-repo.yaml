@@ -16,3 +16,20 @@ spec:
   interval: 1m0s
   timeout: 3m0s
   url: https://helm.quickwit.io
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: quickwit
+  namespace: flux-system
+spec:
+  interval: 1h0m0s
+  path: ./clusters/dev/infra/logging/quickwit
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: lumina
+  timeout: 3m0s
+  wait: true
