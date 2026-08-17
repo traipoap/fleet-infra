@@ -13,7 +13,26 @@ spec:
     name: app-git-secret
 
 ---
-# Waits for HelmRelease 'cert-manager' to be ready before applying ClusterIssuers
+# Step 1: Install cert-manager (HelmRepository + HelmRelease)
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager
+  namespace: flux-system
+spec:
+  interval: 30m0s
+  path: ./sources/cert-manager-repo.yaml
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: GitRepository
+    name: git-repo
+    namespace: flux-system
+  timeout: 5m0s
+  wait: true
+
+---
+# Step 2: Apply ClusterIssuers — waits for cert-manager CRDs to be ready
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -35,7 +54,7 @@ spec:
   wait: true
 
 ---
-# Waits for cert-manager-config (ClusterIssuers) to be ready before deploying the app
+# Step 3: Deploy app — waits for ClusterIssuers to be ready
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
