@@ -13,12 +13,38 @@ spec:
     name: app-git-secret
 
 ---
+# Waits for HelmRelease 'cert-manager' to be ready before applying ClusterIssuers
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager-config
+  namespace: flux-system
+spec:
+  dependsOn:
+  - name: cert-manager
+    namespace: flux-system
+  interval: 30m0s
+  path: ./infrastructure/security/cert-manager
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: GitRepository
+    name: git-repo
+    namespace: flux-system
+  timeout: 3m0s
+  wait: true
+
+---
+# Waits for cert-manager-config (ClusterIssuers) to be ready before deploying the app
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: app
   namespace: flux-system
 spec:
+  dependsOn:
+  - name: cert-manager-config
+    namespace: flux-system
   interval: 30m0s
   path: ./applications/base
   prune: true
