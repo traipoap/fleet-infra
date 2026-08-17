@@ -6,7 +6,6 @@ metadata:
   labels:
     istio.io/dataplane-mode: ambient
     name: lumina
-
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository

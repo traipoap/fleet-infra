@@ -7,4 +7,4 @@ resources:
   - quickwit-repo.yaml
   - weave-gitops-dashboard.yaml
   - nfs-repo.yaml
-  - git-repo.yaml
+  - app.yaml

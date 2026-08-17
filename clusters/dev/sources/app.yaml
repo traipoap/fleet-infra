@@ -1,17 +1,3 @@
----
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: GitRepository
-metadata:
-  name: git-repo
-  namespace: flux-system
-spec:
-  interval: 1m0s
-  ref:
-    branch: main
-  url: https://github.com/traipoap/fleet-infra.git
-  secretRef:
-    name: app-git-secret
----
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -27,7 +13,7 @@ spec:
   retryInterval: 2m0s
   sourceRef:
     kind: GitRepository
-    name: git-repo
+    name: flux-system
     namespace: flux-system
   targetNamespace: lumina
   timeout: 3m0s
