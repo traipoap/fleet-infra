@@ -415,3 +415,10 @@ flux bootstrap github \
 - [ ] Pin Helm chart versions instead of using latest tags
 - [ ] Add pod disruption budgets for infra components in production
 - [ ] Configure notification channels (Slack/Email) via Flux `Alert` resources
+
+
+```mermaid
+graph TD
+    A[HelmRepository] --> B[HelmRelease] --> C[Kustomization]
+    
+```
