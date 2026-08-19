@@ -3,7 +3,7 @@ apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-staging
-  namespace: cert-manager
+  namespace: lumina
 spec:
   acme:
     # Staging server for testing
@@ -20,7 +20,7 @@ apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-production
-  namespace: cert-manager
+  namespace: lumina
 spec:
   acme:
     # Production server
