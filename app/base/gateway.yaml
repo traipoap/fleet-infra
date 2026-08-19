@@ -22,7 +22,7 @@ spec:
     tls:
       mode: Terminate
       certificateRefs:
-      - name: frontend-codezap-win-tls
+      - name: wildcard-tls-secret
         kind: Secret
     allowedRoutes:
       namespaces:
