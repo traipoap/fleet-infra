@@ -40,6 +40,9 @@ metadata:
   name: cert-manager-config
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: infra
+      namespace: flux-system
   interval: 30m0s
   path: ./clusters/dev/infra/security/cert-manager
   prune: true
