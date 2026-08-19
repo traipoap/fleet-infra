@@ -22,11 +22,18 @@ spec:
       metastore_uri: s3://default-bucket/metastore
       storage:
         s3:
-          access_key_id: YOUR_GARAGE_ACCESS_KEY
+          access_key_id_from:
+            secretKeyRef:
+              name: garage-credentials
+              key: access_key_id
+          secret_access_key_from:
+            secretKeyRef:
+              name: garage-credentials
+              key: secret_access_key
+
           endpoint: http://YOUR_INFRA_IP:3900
           force_path_style_access: true
           region: garage
-          secret_access_key: YOUR_GARAGE_SECRET_KEY
       version: 0.8
 
     searcher:
