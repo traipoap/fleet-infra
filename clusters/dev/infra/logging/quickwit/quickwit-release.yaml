@@ -22,11 +22,11 @@ spec:
       metastore_uri: s3://default-bucket/metastore
       storage:
         s3:
-          access_key_id_from:
+          access_key_id:
             secretKeyRef:
               name: garage-credentials
               key: access_key_id
-          secret_access_key_from:
+          secret_access_key:
             secretKeyRef:
               name: garage-credentials
               key: secret_access_key
