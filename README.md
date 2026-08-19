@@ -63,11 +63,11 @@
                                │ reconcile
                                ▼
 ┌────────────────────────────────────────────────────────────────────────┐
-│                     K3s Cluster (HA, embedded etcd)                     │
+│                     K3s Cluster (HA, embedded etcd)                    │
 │                                                                        │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  cert-manager (cert-manager NS)                                  │   │
-│  │  └── ClusterIssuers: letsencrypt-prod, selfsigned-issuer         │   │
+│  │  cert-manager (cert-manager NS)                                 │   │
+│  │  └── ClusterIssuers: letsencrypt-production, selfsigned-issuer  │   │
 │  ├─────────────────────────────────────────────────────────────────┤   │
 │  │  Istio (istio-system NS)                                         │   │
 │  │  ├── Gateway + HTTPRoute (frontend.codezap.win)                  │   │
@@ -266,7 +266,7 @@ flux-system (Kustomization)
 | Component | Source | Notes |
 |-----------|--------|-------|
 | cert-manager CRDs + controller | Helm chart (OCI: `oci://quay.io/jetstack/charts`) | `installCRDs: true` |
-| `letsencrypt-prod` ClusterIssuer | `clusters/dev/infra/security/cert-manager/cert-manager-config.yaml` | ACME prod, HTTP-01 via Istio |
+| `letsencrypt-production` ClusterIssuer | `clusters/dev/infra/security/cert-manager/letsencrypt-http01.yaml` | ACME prod, HTTP-01 via Istio |
 | `selfsigned-issuer` ClusterIssuer | same file | Dev / testing |
 
 **Dependency:** `cert-manager-config` Kustomization has `dependsOn: cert-manager` HelmRelease — ensures CRDs are registered before ClusterIssuers are applied.

@@ -4,14 +4,16 @@ metadata:
   name: frontend-codezap-win-tls
   namespace: lumina
 spec:
-  secretName: frontend-codezap-win-tls # ชื่อนี้ต้องตรงกับ certificateRefs ใน Gateway
+  secretName: frontend-codezap-win-tls
   duration: 24h
   renewBefore: 12h
   commonName: frontend.codezap.win
   dnsNames:
   - frontend.codezap.win
   issuerRef:
-    name: letsencrypt-prod
+    name: letsencrypt-production
     kind: ClusterIssuer
-  # หากใช้ HTTP Challenge ต้องระบุ routeType (สำหรับ Gateway API)
-  # หรือปล่อยว่างหากใช้ DNS Challenge
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    rotationPolicy: Always
