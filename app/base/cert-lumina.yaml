@@ -11,7 +11,7 @@ spec:
   dnsNames:
   - frontend.codezap.win
   issuerRef:
-    name: letsencrypt-staging
+    name: letsencrypt-production
     kind: ClusterIssuer
   privateKey:
     algorithm: RSA
