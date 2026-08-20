@@ -22,14 +22,8 @@ spec:
       metastore_uri: s3://default-bucket/metastore
       storage:
         s3:
-          # Quickwit requires plain strings (reads node.yaml directly).
-          # For production, inject via K8s Secret + init container:
-          #   kubectl create secret generic garage-credentials \
-          #     --from-literal=access_key_id="<GK...>" \
-          #     --from-literal=secret_access_key="<hex...>" \
-          #     -n lumina
-          access_key_id: "CHANGE_ME_GARAGE_ACCESS_KEY"
-          secret_access_key: "CHANGE_ME_GARAGE_SECRET_KEY"
+          access_key_id: "YOUR_GARAGE_ACCESS_KEY"
+          secret_access_key: "YOUR_GARAGE_SECRET_KEY"
           endpoint: http://YOUR_INFRA_IP:3900
           force_path_style_access: true
           region: garage
