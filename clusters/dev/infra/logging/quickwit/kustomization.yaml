@@ -4,4 +4,3 @@ resources:
 - quickwit-release.yaml
 - job-create-index.yaml
 - quickwit-indexer.yaml
-- garage-credentials.yaml
