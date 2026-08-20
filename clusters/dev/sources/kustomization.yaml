@@ -6,5 +6,5 @@ resources:
   - quickwit-repo.yaml
   - weave-gitops-dashboard.yaml
   - nfs-repo.yaml
-  - infra.yaml
+  - observability.yaml
   - app.yaml
