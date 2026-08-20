@@ -10,33 +10,33 @@ Part of the [gitops-platform](https://github.com/traipoap/gitops-platform) proje
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                         Git (this repo — main branch)                    │
+│                         Git (this repo — main branch)                   │
 └──────────────────────────────────┬──────────────────────────────────────┘
                                    │  flux watches (1m interval)
                                    ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                    Flux CD (flux-system namespace)                       │
+│                    Flux CD (flux-system namespace)                      │
 │                                                                         │
 │  GitRepository: flux-system                                             │
 │       │                                                                 │
 │       ▼                                                                 │
-│  Kustomization: flux-system  ──►  clusters/dev/sources/                │
+│  Kustomization: flux-system  ──►  clusters/dev/sources/                 │
 │       │                                                                 │
-│       ├── HelmRepository: jetstack ──► HelmRelease: cert-manager       │
-│       ├── HelmRepository: vector-repo                                   │
-│       ├── HelmRepository: quickwit-repo                                 │
-│       ├── HelmRepository: nfs-subdir-external-provisioner              │
-│       ├── HelmRepository: ww-gitops ──► HelmRelease: ww-gitops         │
+│       ├── HelmRepository: jetstack ──► HelmRelease: cert-manager        │
+│       ├── HelmRepository: vector-repo ──► HelmRelease: vector           │
+│       ├── HelmRepository: quickwit-repo ──► HelmRelease: quickwit       │
+│       ├── HelmRepository: nfs-subdir-external-provisioner ──► HelmRelease: nfs-subdir-external-provisioner │
+│       ├── HelmRepository: ww-gitops ──► HelmRelease: ww-gitops          │
 │       │                                                                 │
 │       ▼  (dependency chain — each waits for the previous)               │
 │                                                                         │
 │  ┌───────────────────────────────────────────────────────────────────┐  │
-│  │ nfs-subdir-external-provisioner  (NFS StorageClass)              │  │
-│  │       └► quickwit  (log store: indexer + searcher)               │  │
-│  │              └► vector  (log shipper: k8s + syslog → Quickwit)   │  │
-│  │                     └► infra  (observability + security)         │  │
-│  │                            └► cert-manager-config  (CA Issuer)   │  │
-│  │                                   └► app  (frontend + backend)   │  │
+│  │ nfs-subdir-external-provisioner  (NFS StorageClass)               │  │
+│  │       └► quickwit  (log store: indexer + searcher)                │  │
+│  │              └► vector  (log shipper: k8s + syslog → Quickwit)    │  │
+│  │                     └► observability  (observability + security)  │  │
+│  │                            └► cert-manager-config  (CA Issuer)    │  │
+│  │                                   └► app  (frontend + backend)    │  │
 │  └───────────────────────────────────────────────────────────────────┘  │
 └──────────────────────────────────┬──────────────────────────────────────┘
                                    │  reconcile
@@ -46,8 +46,8 @@ Part of the [gitops-platform](https://github.com/traipoap/gitops-platform) proje
 │                                                                         │
 │  istio-system/     Gateway API, Prometheus, Grafana, Kiali              │
 │  cert-manager/     CA Issuer (self-signed)                              │
-│  lumina/           App: frontend (Astro), backend (Go), Gateway,       │
-│                    HTTPRoute, Vector, Quickwit                           │
+│  lumina/           App: frontend (Astro), backend (Go), Gateway,        │
+│                    HTTPRoute, Vector, Quickwit                          │
 │  nfs/              NFS Subdir External Provisioner                      │
 │  flux-system/      Flux controllers, Weave GitOps Dashboard             │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -59,10 +59,10 @@ Each Kustomization **blocks** until the previous one is `Ready`:
 
 ```
 flux-system (bootstrap)
-  └─► nfs-subdir-external-provisioner   ← NFS StorageClass for Quickwit PVCs
+  └─► nfs-subdir-external-provisioner    ← NFS StorageClass for Quickwit PVCs
         └─► quickwit                     ← log store (indexer + searcher)
               └─► vector                 ← log shipper (needs Quickwit endpoint)
-                    └─► infra            ← observability (Prometheus, Grafana, Kiali)
+                    └─► observability    ← observability (Prometheus, Grafana, Kiali)
                           └─► cert-manager-config   ← CA Issuer (TLS for Gateway)
                                 └─► app             ← frontend + backend + Gateway + HTTPRoute
 ```
@@ -96,7 +96,7 @@ flux-system (bootstrap)
 │       │   └── gotk-sync.yaml          # GitRepository + Kustomization (→ ./clusters/dev/sources)
 │       │
 │       ├── infra/
-│       │   ├── kustomization.yaml      # Aggregates: observability (+ logging, networking, security)
+│       │   ├── kustomization.yaml      # Aggregates: infra (+ logging, networking, security)
 │       │   ├── observability/
 │       │   │   ├── kustomization.yaml
 │       │   │   ├── prometheus/kustomization.yaml   # Istio Prometheus addon
@@ -132,7 +132,7 @@ flux-system (bootstrap)
 │       └── sources/
 │           ├── kustomization.yaml          # Top-level: all Flux CRs
 │           ├── app.yaml                    # Kustomization: app (dependsOn: cert-manager-config)
-│           ├── infra.yaml                  # Kustomization: infra (dependsOn: vector)
+│           ├── observability.yaml          # Kustomization: observability (dependsOn: vector)
 │           ├── cert-manager-repo.yaml      # Namespace + HelmRepo + HelmRelease + Kustomization
 │           ├── vector-repo.yaml            # HelmRepo + Kustomization: vector (dependsOn: quickwit)
 │           ├── quickwit-repo.yaml          # Namespace + HelmRepo + Kustomization: quickwit (dependsOn: nfs)
@@ -282,7 +282,6 @@ Each cluster has its own `sources/` directory with independent Flux CRs.
 ## Maintenance Checklist
 
 - [ ] Pin Helm chart versions (currently using latest)
-- [ ] Enable `logging/` and `networking/` in `clusters/dev/infra/kustomization.yaml` (currently commented out)
 - [ ] Switch from self-signed CA to Let's Encrypt for production domains
 - [ ] Add PodDisruptionBudgets for stateful components (Quickwit, Vector)
 - [ ] Add NetworkPolicies for namespace isolation
