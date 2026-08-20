@@ -41,7 +41,7 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: infra
+    - name: observability
       namespace: flux-system
   interval: 30m0s
   path: ./clusters/dev/infra/security/cert-manager
