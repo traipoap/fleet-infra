@@ -96,7 +96,7 @@ flux-system (bootstrap)
 │       │   └── gotk-sync.yaml          # GitRepository + Kustomization (→ ./clusters/dev/sources)
 │       │
 │       ├── infra/
-│       │   ├── kustomization.yaml      # Aggregates: infra (+ logging, networking, security)
+│       │   ├── kustomization.yaml      # Aggregates: infra (+ observability, logging, networking, security)
 │       │   ├── observability/
 │       │   │   ├── kustomization.yaml
 │       │   │   ├── prometheus/kustomization.yaml   # Istio Prometheus addon
