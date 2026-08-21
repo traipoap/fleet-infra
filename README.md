@@ -165,7 +165,7 @@ flux-system (bootstrap)
 | 2 | `nfs-subdir-external-provisioner` | `./clusters/dev/infra/networking/nfs` | `flux-system` | `nfs` |
 | 3 | `quickwit` | `./clusters/dev/infra/logging/quickwit` | `nfs-subdir-external-provisioner` | `lumina` |
 | 4 | `vector` | `./clusters/dev/infra/logging/vector` | `quickwit` | `lumina` |
-| 5 | `infra` | `./clusters/dev/infra` | `vector` | — |
+| 5 | `observability` | `./clusters/dev/infra/observability` | `vector` | — |
 | 6 | `cert-manager-config` | `./clusters/dev/infra/security/cert-manager` | `infra` | — |
 | 7 | `app` | `./app/base` | `cert-manager-config` | `lumina` |
 
