@@ -20,9 +20,6 @@ metadata:
   name: nfs-subdir-external-provisioner
   namespace: flux-system
 spec:
-  dependsOn:
-  - name: flux-system
-    namespace: flux-system
   interval: 1h0m0s
   path: ./clusters/dev/infra/networking/nfs
   prune: true
