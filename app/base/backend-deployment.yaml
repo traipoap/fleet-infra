@@ -55,9 +55,14 @@ spec:
             runAsUser: 1000
             runAsGroup: 1000
           volumeMounts:
-            - name: exports
+            - name: exports-volume
               mountPath: /backend/exports
+            - name: data-volume
+              mountPath: /backend/data
       volumes:
-        - name: exports
+        - name: exports-volume
           persistentVolumeClaim:
             claimName: backend-exports
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: backend-data
