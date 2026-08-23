@@ -18,7 +18,6 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
     spec:
-      nodeName: k3s-worker-1
       imagePullSecrets:
         - name: github-registry
       containers:
