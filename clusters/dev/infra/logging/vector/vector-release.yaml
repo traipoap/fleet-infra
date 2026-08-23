@@ -79,3 +79,6 @@ spec:
             (.kubernetes.pod_labels.app == "frontend") ||
             (.kubernetes.pod_labels.app == "backend")
     role: Agent
+    service:
+      enabled: true
+      type: "NodePort"
