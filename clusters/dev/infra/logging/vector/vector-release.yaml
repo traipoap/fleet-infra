@@ -77,7 +77,8 @@ spec:
           type: filter
           condition: |
             (.kubernetes.pod_labels.app == "frontend") ||
-            (.kubernetes.pod_labels.app == "backend")
+            (.kubernetes.pod_labels.app == "backend") ||
+            (.appname == "generator")
     role: Agent
     service:
       enabled: true
