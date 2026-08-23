@@ -31,6 +31,7 @@ spec:
             method: newline_delimited
           inputs:
           - filter_app_logs
+          - filter_syslogs
           method: post
           type: http
           uri: http://quickwit-searcher:7280/api/v1/syslogs/ingest
@@ -77,7 +78,12 @@ spec:
           type: filter
           condition: |
             (.kubernetes.pod_labels.app == "frontend") ||
-            (.kubernetes.pod_labels.app == "backend") ||
+            (.kubernetes.pod_labels.app == "backend")
+        filter_syslogs:
+          inputs:
+          - vector_timestamp
+          type: filter
+          condition: |
             (.appname == "generator")
     role: Agent
     service:
