@@ -4,4 +4,7 @@ resources:
 - vector-release.yaml
 namespace: lumina
 patches:
-  - path: vector-service-patch.yaml
+- target:
+    kind: Service
+    name: vector
+  path: vector-service-patch.yaml
