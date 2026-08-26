@@ -53,6 +53,6 @@ spec:
             runAsNonRoot: true
             runAsUser: 10001
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
+            #readOnlyRootFilesystem: true
             capabilities:
               drop: ["ALL"]
