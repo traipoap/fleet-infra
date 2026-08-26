@@ -5,18 +5,17 @@ metadata:
   namespace: lumina
 data:
   # Frontend configuration
-  FRONTEND_PORT: "4321"
-  NODE_ENV: "development"
-  BACKEND_HOST: "http://backend-svc"
-  BACKEND_SEARCH_BACKEND: "http://backend-svc:8080"
+  ALLOWED_HOSTS: "frontend.codezap.win,.codezap.win"
+  API_PROXY_TARGET: "http://backend-svc:8080"
+
 
   # Backend configuration
   BACKEND_PORT: "8080"
+  CORS_ORIGINS: "https://frontend.codezap.win"
   QUICKWIT_URL: "http://quickwit-searcher:7280"
 
   # Database configuration
-  DATABASE_PATH: "/backend/data/users.db"
+  DATABASE_PATH: "backend/data/users.db"
 
   # JWT settings
-  JWT_SECRET: "xxx"
-  JWT_EXPIRES_IN: "24h"
+  JWT_SECRET: "CHANGEME"

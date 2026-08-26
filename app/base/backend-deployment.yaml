@@ -50,10 +50,13 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           securityContext:
-            readOnlyRootFilesystem: true
             runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
+            runAsUser: 10001
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+
           volumeMounts:
             - name: exports-volume
               mountPath: /backend/exports
