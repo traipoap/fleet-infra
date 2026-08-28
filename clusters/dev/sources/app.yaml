@@ -4,9 +4,6 @@ metadata:
   name: app
   namespace: flux-system
 spec:
-  dependsOn:
-  - name: cert-manager-config
-    namespace: flux-system
   interval: 30m0s
   path: ./app/base
   prune: true

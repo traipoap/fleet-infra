@@ -23,9 +23,6 @@ metadata:
   name: quickwit
   namespace: flux-system
 spec:
-  dependsOn:
-  - name: nfs-subdir-external-provisioner
-    namespace: flux-system
   interval: 1h0m0s
   path: ./clusters/dev/infra/logging/quickwit
   prune: true
