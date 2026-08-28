@@ -8,4 +8,5 @@ spec:
   imageRepositoryRef:
     name: backend
   policy:
-    semver: ">=0.0.0"
+    semver:
+      range: ">=0.0.0"

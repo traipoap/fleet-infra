@@ -8,4 +8,4 @@ spec:
   image: ghcr.io/traipoap/frontend
   interval: 5m0s
   secretRef:
-    name: flux-system
+    name: github-registry
