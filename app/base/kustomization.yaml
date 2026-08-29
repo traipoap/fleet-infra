@@ -12,5 +12,3 @@ resources:
   - gateway.yaml
   - httproute.yaml
   - backend-pvc.yaml
-  - github-registry-sealed.yaml
-  - jwt-secret-sealed.yaml
