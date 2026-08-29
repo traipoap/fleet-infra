@@ -36,5 +36,5 @@ spec:
   values:
     adminUser:
       create: true
-      passwordHash: CHANGE_ME
+      passwordHash: $WEAVE_SECRET
       username: admin
