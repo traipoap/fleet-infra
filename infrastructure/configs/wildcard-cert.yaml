@@ -1,0 +1,17 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-tls
+  namespace: cert-manager
+spec:
+  secretName: wildcard-tls-secret
+  issuerRef:
+    # Wildcard certificates require DNS01 challenge
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  dnsNames:
+    - "*.codezap.win"
+    - "codezap.win"
+  privateKey:
+    algorithm: RSA
+    size: 2048

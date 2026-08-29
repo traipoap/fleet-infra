@@ -1,0 +1,80 @@
+# otel-values.yaml - THE "TRUE FAIR COMPARISON" VERSION
+# เป้าหมาย: ส่งข้อมูลไปยัง Quickwit (OTLP) เพื่อเทียบกับ Vector แบบ 100%
+
+mode: daemonset
+presets:
+  logsCollection:
+    enabled: true
+  kubernetesAttributes:
+    enabled: true
+
+image:
+  repository: otel/opentelemetry-collector-contrib
+  tag: "latest"
+
+tolerations:
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+
+config:
+  extensions:
+    # 1. Health Check (กัน Error ตัวแรก)
+    health_check:
+      endpoint: 0.0.0.0:13133
+
+    # 2. Disk Buffer (จำลองความสามารถของ Vector)
+    file_storage:
+      directory: /otel-data-dir
+      timeout: 10s
+
+  receivers:
+    # 3. อ่าน Log จาก Pods โดยตรง (เหมือน kubernetes_logs ของ Vector)
+    file_log:
+      include: ["/var/log/pods/**/*.log"]
+      start_at: end
+
+  processors:
+    batch:
+      timeout: 5s
+      send_batch_size: 1000
+
+  exporters:
+    # 4. ส่งไปยัง Quickwit (เลียนแบบ OTLP exporter ใน Vector เป๊ะๆ)
+    otlp:
+      endpoint: "quickwit-indexer.lumina.svc.cluster.local:7281"
+      tls:
+        insecure: true
+      headers:
+        qw-otel-logs-index: "otel-logs-v0_7"
+
+      # เพิ่มความสามารถในการ Buffer เพื่อให้เทียบกับ Vector ได้อย่างยุติธรรม
+      sending_queue:
+        enabled: true
+        queue_size: 20000 # จำนวน Event ใน RAM (คล้าย max_events)
+        storage: file_storage # ถ้า RAM เต็ม ให้ลง Disk
+
+      retry_on_failure:
+        enabled: true
+        initial_interval: 5s
+        max_interval: 30s
+
+  service:
+    extensions: [health_check, file_storage]
+    pipelines:
+      logs:
+        receivers: [file_log]
+        processors: [batch]
+        exporters: [otlp]
+
+# ---------------------------------------------------------
+# INFRASTRUCTURE
+# ---------------------------------------------------------
+extraVolumes:
+  - name: otel-data-volume
+    emptyDir: {}
+
+extraVolumeMounts:
+  - name: otel-data-volume
+    mountPath: /otel-data-dir

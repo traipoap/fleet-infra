@@ -1,0 +1,27 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: vector-repo
+  namespace: lumina
+spec:
+  interval: 1m0s
+  timeout: 3m0s
+  url: https://helm.vector.dev
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: vector
+  namespace: flux-system
+spec:
+  interval: 1h0m0s
+  path: ./clusters/dev/infra/logging/vector
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: lumina
+  timeout: 3m0s
+  wait: true
