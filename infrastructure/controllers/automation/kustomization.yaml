@@ -8,3 +8,4 @@ resources:
 - backend-automation.yaml
 - backend-policy.yaml
 - backend-registry.yaml
+namespace: lumina
