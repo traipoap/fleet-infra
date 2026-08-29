@@ -8,7 +8,7 @@ patches:
 - target:
     kind: Service
     name: vector
-  path: |
+  patch: |-
     apiVersion: v1
     kind: Service
     metadata:
