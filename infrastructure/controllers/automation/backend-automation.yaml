@@ -22,5 +22,5 @@ spec:
     kind: GitRepository
     name: flux-system
   update:
-    path: ./app/base
+    path: ./apps/staging
     strategy: Setters
