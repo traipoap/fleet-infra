@@ -24,7 +24,7 @@ spec:
         s3:
           access_key_id: $GARAGE_DEFAULT_ACCESS_KEY
           secret_access_key: $GARAGE_DEFAULT_SECRET_KEY
-          endpoint: http://$GARAGE_ENDPOINT
+          endpoint: http://$GARAGE_ENDPOINT:3900
           force_path_style_access: true
           region: garage
       version: 0.8
