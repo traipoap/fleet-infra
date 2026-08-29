@@ -16,7 +16,7 @@ spec:
 
   values:
     nfs:
-      server: $GARAGE_ENDPOINT
+      server: GARAGE_ENDPOINT
       path: /nfs
     storageClass:
       defaultClass: true
