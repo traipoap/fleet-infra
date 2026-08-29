@@ -8,3 +8,4 @@ resources:
   - nfs-repo.yaml
   - observability.yaml
   - app.yaml
+  - external-secrets-repo.yaml
