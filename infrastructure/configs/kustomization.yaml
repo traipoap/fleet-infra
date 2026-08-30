@@ -5,4 +5,3 @@ resources:
   - aws-secret-store.yaml
   - jwt-external-secret.yaml
   - registry-external-secret.yaml
-  - nfs-external-secret.yaml
