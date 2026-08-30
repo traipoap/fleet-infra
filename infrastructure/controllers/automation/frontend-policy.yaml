@@ -7,7 +7,7 @@ metadata:
 spec:
   imageRepositoryRef:
     name: frontend
-    namespace: flux-system
+    namespace: lumina
   policy:
     semver:
       range: ">=0.0.0"
