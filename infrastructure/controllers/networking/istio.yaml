@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-gateway-istio
+  namespace: lumina
+spec:
+  template:
+    spec:
+      containers:
+        - name: frontend-gateway-istio
+          image: registry.istio.io/release/proxyv2:1.30.4-distroless
+          resources: {}
