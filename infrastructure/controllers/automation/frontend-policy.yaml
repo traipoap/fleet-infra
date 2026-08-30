@@ -3,7 +3,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: frontend
-  namespace: flux-system
+  namespace: lumina
 spec:
   imageRepositoryRef:
     name: frontend

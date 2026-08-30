@@ -3,7 +3,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:
   name: backend
-  namespace: flux-system
+  namespace: lumina
 spec:
   image: ghcr.io/traipoap/backend
   interval: 5m0s
