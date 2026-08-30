@@ -36,5 +36,5 @@ spec:
   values:
     adminUser:
       create: true
-      passwordHash: WEAVE_SECRET
+      passwordHash: REDACTED_PASSWORD_HASH
       username: admin

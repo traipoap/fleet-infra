@@ -4,4 +4,4 @@ resources:
 - grafana/
 - kiali/
 - prometheus/
-- weave-gitops/
+- weave-gitops.yaml
