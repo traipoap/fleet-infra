@@ -33,8 +33,7 @@ spec:
         kind: HelmRepository
         name: ww-gitops
   interval: 1h0m0s
-  values:
-    adminUser:
-      create: true
-      passwordHash: WEAVE_SECRET
-      username: admin
+  valuesFrom:
+    - kind: Secret
+      name: weave-secret-values
+      valuesKey: values.yaml

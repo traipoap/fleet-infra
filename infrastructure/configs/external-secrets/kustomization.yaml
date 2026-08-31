@@ -6,3 +6,4 @@ resources:
   - registry-external-secret.yaml
   - nfs-external-secret.yaml
   - quickwit-external-secret.yaml
+  - weave-external-secret.yaml
