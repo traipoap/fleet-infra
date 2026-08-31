@@ -13,6 +13,10 @@ spec:
         kind: HelmRepository
         name: quickwit-repo
   interval: 1m0s
+  valuesFrom:
+    - kind: Secret
+      name: quickwit-s3-secret-values
+      valuesKey: values.yaml
   values:
     config:
       data_dir: /quickwit/qwdata
@@ -22,9 +26,6 @@ spec:
       metastore_uri: s3://default-bucket/metastore
       storage:
         s3:
-          access_key_id: GARAGE_DEFAULT_ACCESS_KEY
-          secret_access_key: GARAGE_DEFAULT_SECRET_KEY
-          endpoint: http://GARAGE_ENDPOINT:3900
           force_path_style_access: true
           region: garage
       version: 0.8
