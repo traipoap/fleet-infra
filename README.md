@@ -20,52 +20,59 @@ Part of the [gitops-platform](https://github.com/traipoap/gitops-platform) proje
 │  GitRepository: flux-system                                             │
 │       │                                                                 │
 │       ▼                                                                 │
-│  Kustomization: flux-system  ──►  clusters/dev/sources/                 │
+│  ArtifactGenerator: flux-system                                         │
+│       │  packages into:                                                 │
+│       │  ├── infrastructure  (infrastructure/**)                        │
+│       │  └── apps            (apps/base/** + apps/staging/**)           │
 │       │                                                                 │
-│       ├── HelmRepository: jetstack ──► HelmRelease: cert-manager        │
-│       ├── HelmRepository: vector-repo ──► HelmRelease: vector           │
-│       ├── HelmRepository: quickwit-repo ──► HelmRelease: quickwit       │
-│       ├── HelmRepository: nfs-subdir-external-provisioner ──► HelmRelease: nfs-subdir-external-provisioner │
-│       ├── HelmRepository: ww-gitops ──► HelmRelease: ww-gitops          │
-│       │                                                                 │
-│       ▼  (dependency chain — each waits for the previous)               │
+│       ▼                                                                 │
+│  Kustomization: infra-controllers  ──►  ./controllers                   │
+│  Kustomization: infra-configs      ──►  ./configs                       │
+│  Kustomization: apps               ──►  ./staging                       │
 │                                                                         │
-│  ┌───────────────────────────────────────────────────────────────────┐  │
-│  │ nfs-subdir-external-provisioner  (NFS StorageClass)               │  │
-│  │       └► quickwit  (log store: indexer + searcher)                │  │
-│  │              └► vector  (log shipper: k8s + syslog → Quickwit)    │  │
-│  │                     └► observability  (observability + security)  │  │
-│  │                            └► cert-manager-config  (CA Issuer)    │  │
-│  │                                   └► app  (frontend + backend)    │  │
-│  └───────────────────────────────────────────────────────────────────┘  │
+│  Controllers (via HelmReleases):                                        │
+│  ├── cert-manager          (jetstack OCI)                               │
+│  ├── external-secrets      (AWS SecretsManager)                         │
+│  ├── vector                (log shipper)                                │
+│  ├── quickwit              (log store)                                  │
+│  ├── nfs-subdir-external   (NFS StorageClass)                           │
+│  └── weave-gitops          (GitOps dashboard)                           │
+│                                                                         │
+│  Image Automation (ImageUpdateAutomation):                              │
+│  ├── backend   (ghcr.io/traipoap/backend → apps/staging)                │
+│  └── frontend  (ghcr.io/traipoap/frontend → apps/staging)               │
 └──────────────────────────────────┬──────────────────────────────────────┘
                                    │  reconcile
                                    ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                        K3s Cluster (HA, 3 masters)                      │
 │                                                                         │
-│  istio-system/     Gateway API, Prometheus, Grafana, Kiali              │
-│  cert-manager/     CA Issuer (self-signed)                              │
-│  lumina/           App: frontend (Astro), backend (Go), Gateway,        │
-│                    HTTPRoute, Vector, Quickwit                          │
-│  nfs/              NFS Subdir External Provisioner                      │
-│  flux-system/      Flux controllers, Weave GitOps Dashboard             │
+│  istio-system/       Gateway API, Prometheus, Grafana, Kiali            │
+│  cert-manager/       CA Issuer (self-signed)                            │
+│  external-secrets/   External Secrets Operator + ClusterSecretStore     │
+│  lumina/             App: frontend, backend, Gateway, HTTPRoute         │
+│                      Vector, Quickwit, Image Automation CRDs            │
+│  nfs/                NFS Subdir External Provisioner                    │
+│  flux-system/        Flux controllers, Weave GitOps Dashboard           │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Dependency Chain
+### Key Design: ArtifactGenerator + ExternalArtifact
 
-Each Kustomization **blocks** until the previous one is `Ready`:
+Flux's **ArtifactGenerator** packages subdirectories into artifacts, and Kustomizations reference them via `ExternalArtifact` source kind. This decouples the manifest layout from the Flux reconciliation path:
 
 ```
-flux-system (bootstrap)
-  └─► nfs-subdir-external-provisioner    ← NFS StorageClass for Quickwit PVCs
-        └─► quickwit                     ← log store (indexer + searcher)
-              └─► vector                 ← log shipper (needs Quickwit endpoint)
-                    └─► observability    ← observability (Prometheus, Grafana, Kiali)
-                          └─► cert-manager-config   ← CA Issuer (TLS for Gateway)
-                                └─► app             ← frontend + backend + Gateway + HTTPRoute
+infrastructure/**  ──►  Artifact: infrastructure  ──►  Kustomization: infra-controllers
+                                              └─────►  Kustomization: infra-configs
+apps/base/**       ──►  Artifact: apps          ──►  Kustomization: apps
+apps/staging/**    ──┘
 ```
+
+This allows:
+- **Shared manifests** in `apps/base/` (deployments, services, gateway)
+- **Environment overlays** in `apps/staging/` (patches, resource overrides)
+- **Clean separation** of infrastructure controllers (Helm) from configs (plain YAML)
+- **Image Automation** updating `apps/staging/` without touching `apps/base/`
 
 ---
 
@@ -73,72 +80,79 @@ flux-system (bootstrap)
 
 ```
 .
-├── app/
-│   └── base/
-│       ├── kustomization.yaml          # Bundles all app resources
-│       ├── namespace.yaml              # lumina (Istio ambient mode)
-│       ├── configmap.yaml              # Shared env config
-│       ├── frontend-deployment.yaml    # Astro frontend (port 4321)
-│       ├── frontend-service.yaml       # ClusterIP → 4321
-│       ├── backend-deployment.yaml     # Go API server (port 8080)
-│       ├── backend-service.yaml        # ClusterIP → 8080
-│       ├── backend-pvc.yaml            # Persistent storage for exports
-│       ├── gateway.yaml                # Istio Gateway (HTTP + HTTPS, TLS)
-│       ├── httproute.yaml              # Path-based routing rules
-│       ├── ingress.yaml                # Legacy fallback
-│       └── cert-lumina.yaml            # Certificate resource
+├── apps/                            # Application manifests (shared + per-env overlays)
+│   ├── base/                        # Shared: deployments, services, gateway, routing
+│   │   ├── kustomization.yaml
+│   │   ├── namespace.yaml           # lumina (Istio ambient mode)
+│   │   ├── configmap.yaml           # Shared env config
+│   │   ├── backend-deployment.yaml  # Go API server (port 8080)
+│   │   ├── backend-service.yaml     # ClusterIP → 8080
+│   │   ├── backend-pvc.yaml         # Persistent storage
+│   │   ├── frontend-deployment.yaml # Astro frontend (port 4321)
+│   │   ├── frontend-service.yaml    # ClusterIP → 4321
+│   │   ├── gateway.yaml             # Istio Gateway (HTTP + HTTPS, TLS)
+│   │   ├── httproute.yaml           # Path-based routing rules
+│   │   └── ingress.yaml             # Legacy fallback
+│   └── staging/                     # Staging overlay (patches, image tags)
+│       └── kustomization.yaml       # Extends ../base
 │
 ├── clusters/
-│   └── dev/
-│       ├── flux-system/
-│       │   ├── kustomization.yaml
-│       │   ├── gotk-components.yaml    # Flux CRDs + controllers
-│       │   └── gotk-sync.yaml          # GitRepository + Kustomization (→ ./clusters/dev/sources)
-│       │
-│       ├── infra/
-│       │   ├── kustomization.yaml      # Aggregates: infra (+ observability, logging, networking, security)
-│       │   ├── observability/
-│       │   │   ├── kustomization.yaml
-│       │   │   ├── prometheus/kustomization.yaml   # Istio Prometheus addon
-│       │   │   ├── grafana/kustomization.yaml      # Istio Grafana addon + Quickwit datasource
-│       │   │   └── kiali/kustomization.yaml        # Istio Kiali addon
-│       │   ├── logging/
-│       │   │   ├── kustomization.yaml
-│       │   │   ├── otel-config.yaml                # OTel Collector (alternative pipeline)
-│       │   │   ├── vector/
-│       │   │   │   ├── kustomization.yaml
-│       │   │   │   ├── values.yaml                 # Custom remap → Quickwit HTTP sink
-│       │   │   │   └── vector-release.yaml         # HelmRelease
-│       │   │   └── quickwit/
-│       │   │       ├── kustomization.yaml
-│       │   │       ├── quickwit-release.yaml       # HelmRelease (indexer + searcher)
-│       │   │       ├── quickwit-indexer.yaml
-│       │   │       └── job-create-index.yaml       # Index schema job
-│       │   ├── networking/
-│       │   │   ├── kustomization.yaml
-│       │   │   └── nfs/
-│       │   │       ├── kustomization.yaml
-│       │   │       └── nfs-subdir-external-provisioner-release.yaml
-│       │   └── security/
-│       │       ├── kustomization.yaml
-│       │       └── cert-manager/
-│       │           ├── kustomization.yaml
-│       │           ├── ca-issuer.yaml              # Self-signed CA ClusterIssuer
-│       │           ├── letsencrypt-http01.yaml     # Let's Encrypt HTTP-01 (for prod)
-│       │           ├── letsencrypt-dns01-cloudflare.yaml  # Let's Encrypt DNS-01
-│       │           ├── self-signed-issuer.yaml     # Self-signed (dev)
-│       │           └── wildcard-cert.yaml          # Wildcard cert
-│       │
-│       └── sources/
-│           ├── kustomization.yaml          # Top-level: all Flux CRs
-│           ├── app.yaml                    # Kustomization: app (dependsOn: cert-manager-config)
-│           ├── observability.yaml          # Kustomization: observability (dependsOn: vector)
-│           ├── cert-manager-repo.yaml      # Namespace + HelmRepo + HelmRelease + Kustomization
-│           ├── vector-repo.yaml            # HelmRepo + Kustomization: vector (dependsOn: quickwit)
-│           ├── quickwit-repo.yaml          # Namespace + HelmRepo + Kustomization: quickwit (dependsOn: nfs)
-│           ├── nfs-repo.yaml               # Namespace + HelmRepo + Kustomization: nfs (dependsOn: flux-system)
-│           └── weave-gitops-dashboard.yaml # HelmRepo + HelmRelease: Weave GitOps UI
+│   └── staging/                     # Per-cluster Flux CRs
+│       ├── flux-system/             # Flux bootstrap
+│       │   └── gotk-sync.yaml       # GitRepository + Kustomization (→ ./clusters/staging)
+│       ├── apps.yaml                # Kustomization: apps (ExternalArtifact → ./staging)
+│       ├── infrastructure.yaml      # Kustomizations: infra-controllers + infra-configs
+│       └── artifacts.yaml           # ArtifactGenerator (packages infra + apps)
 │
+├── infrastructure/                  # Platform components
+│   ├── kustomization.yaml           # Aggregates: configs + controllers
+│   ├── configs/                     # Plain YAML configs (no Helm)
+│   │   ├── kustomization.yaml
+│   │   ├── cert-manager/            # ClusterIssuers (CA, Let's Encrypt, wildcard)
+│   │   │   ├── kustomization.yaml
+│   │   │   ├── ca-issuer.yaml
+│   │   │   ├── letsencrypt-http01.yaml
+│   │   │   ├── letsencrypt-dns01-cloudflare.yaml
+│   │   │   └── wildcard-cert.yaml
+│   │   └── external-secrets/        # External Secrets + AWS SecretsManager
+│   │       ├── kustomization.yaml
+│   │       ├── aws-secret-store.yaml    # ClusterSecretStore (AWS SM)
+│   │       ├── jwt-external-secret.yaml # JWT → K8s Secret
+│   │       └── registry-external-secret.yaml  # Registry creds → K8s Secret
+│   └── controllers/                 # Helm-managed controllers
+│       ├── kustomization.yaml       # Aggregates: automation, logging, networking, observability, security
+│       ├── automation/              # Flux Image Automation
+│       │   ├── kustomization.yaml
+│       │   ├── backend-registry.yaml   # ImageRepository
+│       │   ├── backend-policy.yaml     # ImagePolicy (semver)
+│       │   ├── backend-automation.yaml # ImageUpdateAutomation
+│       │   ├── frontend-registry.yaml
+│       │   ├── frontend-policy.yaml
+│       │   └── frontend-automation.yaml
+│       ├── logging/                 # Log pipeline
+│       │   ├── kustomization.yaml
+│       │   ├── otel-config.yaml         # OTel Collector (alternative)
+│       │   ├── vector/              # Vector (log shipper)
+│       │   └── quickwit/            # Quickwit (log store)
+│       ├── networking/              # Storage
+│       │   ├── kustomization.yaml
+│       │   └── nfs-subdir-external-provisioner.yaml
+│       ├── observability/           # Monitoring
+│       │   ├── kustomization.yaml
+│       │   ├── weave-gitops.yaml      # Weave GitOps dashboard
+│       │   ├── prometheus/          # Istio Prometheus addon
+│       │   ├── grafana/             # Istio Grafana addon
+│       │   └── kiali/               # Istio Kiali addon
+│       └── security/                # Security controllers
+│           ├── kustomization.yaml
+│           ├── cert-manager.yaml    # HelmRelease (jetstack OCI)
+│           └── external-secrets.yaml # HelmRelease (external-secrets.io)
+│
+├── scripts/
+│   └── validate.sh                  # Manifest validation
+│
+├── limitrange.yaml                  # Cluster-wide LimitRange
+├── require-requests.yaml            # Resource request requirements
 └── README.md
 ```
 
@@ -151,36 +165,60 @@ flux-system (bootstrap)
 | Kind | Name | Namespace | Purpose |
 |------|------|-----------|---------|
 | `GitRepository` | `flux-system` | `flux-system` | Points to this repo (main branch) |
-| `HelmRepository` | `jetstack` | `flux-system` | cert-manager OCI charts (`quay.io/jetstack/charts`) |
-| `HelmRepository` | `vector-repo` | `lumina` | Vector charts (`helm.vector.dev`) |
-| `HelmRepository` | `quickwit-repo` | `lumina` | Quickwit charts (`helm.quickwit.io`) |
-| `HelmRepository` | `nfs-subdir-external-provisioner` | `nfs` | NFS provisioner charts |
-| `HelmRepository` | `ww-gitops` | `flux-system` | Weave GitOps OCI charts |
+| `ArtifactGenerator` | `flux-system` | `flux-system` | Packages `infrastructure/**` and `apps/**` into artifacts |
 
-### Kustomizations (dependency order)
+### Artifacts (via ArtifactGenerator)
 
-| # | Name | Path | `dependsOn` | Target NS |
-|---|------|------|-------------|-----------|
-| 1 | `flux-system` | `./clusters/dev/sources` | — | — |
-| 2 | `nfs-subdir-external-provisioner` | `./clusters/dev/infra/networking/nfs` | `flux-system` | `nfs` |
-| 3 | `quickwit` | `./clusters/dev/infra/logging/quickwit` | `nfs-subdir-external-provisioner` | `lumina` |
-| 4 | `vector` | `./clusters/dev/infra/logging/vector` | `quickwit` | `lumina` |
-| 5 | `observability` | `./clusters/dev/infra/observability` | `vector` | — |
-| 6 | `cert-manager-config` | `./clusters/dev/infra/security/cert-manager` | `infra` | — |
-| 7 | `app` | `./app/base` | `cert-manager-config` | `lumina` |
+| Artifact | Source | Contains |
+|----------|--------|----------|
+| `infrastructure` | `@monorepo/infrastructure/**` | Controllers + configs manifests |
+| `apps` | `@monorepo/apps/base/**` + `@monorepo/apps/staging/**` | Application manifests |
+
+### Kustomizations (apply order)
+
+| # | Name | Source | Path | Purpose |
+|---|------|--------|------|---------|
+| 1 | `flux-system` | `GitRepository` | `./clusters/staging` | Bootstrap Flux + ArtifactGenerator |
+| 2 | `infra-controllers` | `ExternalArtifact` | `./controllers` | HelmReleases: cert-manager, external-secrets, vector, quickwit, nfs, weave, image automation |
+| 3 | `infra-configs` | `ExternalArtifact` | `./configs` | ClusterIssuers, ExternalSecrets |
+| 4 | `apps` | `ExternalArtifact` | `./staging` | App deployments + overlays |
 
 ### HelmReleases
 
 | Name | Namespace | Chart | Source |
 |------|-----------|-------|--------|
-| `cert-manager` | `flux-system` | `cert-manager` (jetstack) | `jetstack` |
+| `cert-manager` | `cert-manager` | `cert-manager` (jetstack OCI) | `jetstack` |
+| `external-secrets` | `external-secrets` | `external-secrets` | `external-secrets` |
 | `ww-gitops` | `flux-system` | `weave-gitops` | `ww-gitops` |
 
-> Vector and Quickwit are deployed via Kustomizations (not HelmReleases) that reference their HelmRepositories.
+### Image Automation (ImageUpdateAutomation)
+
+| Name | Image | Policy | Update Path | Strategy |
+|------|-------|--------|-------------|----------|
+| `backend` | `ghcr.io/traipoap/backend` | semver `>=0.0.0` | `./apps/staging` | Setters |
+| `frontend` | `ghcr.io/traipoap/frontend` | semver `>=0.0.0` | `./apps/staging` | Setters |
+
+> Flux auto-updates image tags in `apps/staging/` and commits as `fluxcdbot`.
+
+### External Secrets
+
+| Kind | Name | Source | Purpose |
+|------|------|--------|---------|
+| `ClusterSecretStore` | `secretstore-aws` | AWS SecretsManager | Sync remote secrets → K8s |
+| `ExternalSecret` | `jwt-secret` | AWS SM | JWT_SECRET for backend |
+| `ExternalSecret` | `registry-credentials` | AWS SM | GHCR image pull creds |
 
 ---
 
 ## Application
+
+### Layout
+
+```
+apps/base/        ← shared manifests (deployments, services, gateway)
+apps/staging/     ← staging overlay (kustomize patches, image tags)
+                     └── kustomization.yaml → extends ../base
+```
 
 ### Routing
 
@@ -201,6 +239,11 @@ frontend.codezap.win
 - **ClusterIssuer**: `cluster-ca` (self-signed CA)
 - Certificate: `frontend-codezap-win-tls`
 - Gateway API class: `istio`
+
+### Secrets (via External Secrets)
+
+- **JWT_SECRET**: Synced from AWS SecretsManager → K8s Secret `jwt-secret` → injected as env var
+- **Registry credentials**: Synced from AWS SecretsManager → K8s Secret `github-registry` → `imagePullSecrets`
 
 ---
 
@@ -223,6 +266,24 @@ Pod logs ──► Vector (k8s_logs + syslog) ──► Quickwit (HTTP sink)
                                             Grafana (Quickwit datasource)
 ```
 
+### Image Automation Flow
+
+```
+ghcr.io/traipoap/backend:0.0.47 pushed
+    │
+    ▼
+ImageRepository (poll every 5m)
+    │
+    ▼
+ImagePolicy (semver: pick highest ≥ 0.0.0)
+    │
+    ▼
+ImageUpdateAutomation (update tag in apps/staging/ → commit as fluxcdbot → push)
+    │
+    ▼
+Flux Kustomization: apps (detects diff → deploys new image)
+```
+
 ---
 
 ## Quick Start
@@ -234,7 +295,7 @@ flux bootstrap github \
   --owner=traipoap \
   --repository=fleet-infra \
   --branch=main \
-  --path=./clusters/dev \
+  --path=./clusters/staging \
   --personal
 ```
 
@@ -244,6 +305,9 @@ flux bootstrap github \
 flux get all -A
 kubectl get kustomization -n flux-system
 kubectl get helmrelease -n flux-system
+kubectl get artifacts -n flux-system
+kubectl get imageautomations -n lumina
+kubectl get externalsecrets -n lumina
 kubectl get pods -A
 ```
 
@@ -251,40 +315,55 @@ kubectl get pods -A
 
 ```bash
 flux reconcile kustomization flux-system -n flux-system --with-source
-flux reconcile kustomization <name> -n flux-system --with-source
+flux reconcile kustomization infra-controllers -n flux-system --with-source
+flux reconcile kustomization apps -n flux-system --with-source
+```
+
+### Validate Manifests
+
+```bash
+./scripts/validate.sh
 ```
 
 ---
 
 ## Adding a New Environment
 
-To deploy to a second cluster (e.g., `staging`):
+To deploy to a second cluster (e.g., `production`):
 
 ```bash
-# 1. Copy the dev structure
-cp -r clusters/dev clusters/staging
+# 1. Create the cluster bootstrap
+cp -r clusters/staging clusters/production
+# Update gotk-sync.yaml path → ./clusters/production
 
-# 2. Update the git URL in gotk-sync.yaml (or use a different repo)
+# 2. Create the env overlay
+cp -r apps/staging apps/production
+# Add kustomize patches (replicas, resources, env-specific config)
 
-# 3. Bootstrap Flux on the new cluster
+# 3. Update ArtifactGenerator to include the new env
+# clusters/production/artifacts.yaml → add apps/production/**
+
+# 4. Bootstrap Flux on the new cluster
 flux bootstrap github \
   --owner=traipoap \
   --repository=fleet-infra \
   --branch=main \
-  --path=./clusters/staging \
+  --path=./clusters/production \
   --personal
 ```
 
-Each cluster has its own `sources/` directory with independent Flux CRs.
+Each cluster has its own `flux-system/` + Kustomizations. Shared manifests live in `apps/base/`.
 
 ---
 
 ## Maintenance Checklist
 
-- [ ] Pin Helm chart versions (currently using latest)
+- [ ] Pin Helm chart versions (currently using `>=` ranges)
 - [ ] Switch from self-signed CA to Let's Encrypt for production domains
 - [ ] Add PodDisruptionBudgets for stateful components (Quickwit, Vector)
 - [ ] Add NetworkPolicies for namespace isolation
 - [ ] Configure Flux alerts (Slack/Email) via `Alert` resources
 - [ ] Add Kyverno/OPA policies for security enforcement
-- [ ] Multi-environment promotion (dev → staging → prod)
+- [ ] Multi-environment promotion (staging → production)
+- [ ] Add Velero backup for etcd + PVCs
+- [ ] Add image vulnerability scanning in CI pipeline
