@@ -4,3 +4,5 @@ README-platform.md
 access-key
 secret-access-key
 awssm-secret.yaml
+limitrange.yaml
+require-requests.yaml
