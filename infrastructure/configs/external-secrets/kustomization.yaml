@@ -5,3 +5,4 @@ resources:
   - jwt-external-secret.yaml
   - registry-external-secret.yaml
   - nfs-external-secret.yaml
+  - quickwit-external-secret.yaml
