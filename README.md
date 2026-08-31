@@ -111,14 +111,18 @@ This allows:
 │   │   ├── cert-manager/            # ClusterIssuers (CA, Let's Encrypt, wildcard)
 │   │   │   ├── kustomization.yaml
 │   │   │   ├── ca-issuer.yaml
-│   │   │   ├── letsencrypt-http01.yaml
 │   │   │   ├── letsencrypt-dns01-cloudflare.yaml
+│   │   │   ├── letsencrypt-http01.yaml
 │   │   │   └── wildcard-cert.yaml
 │   │   └── external-secrets/        # External Secrets + AWS SecretsManager
-│   │       ├── kustomization.yaml
 │   │       ├── aws-secret-store.yaml    # ClusterSecretStore (AWS SM)
 │   │       ├── jwt-external-secret.yaml # JWT → K8s Secret
-│   │       └── registry-external-secret.yaml  # Registry creds → K8s Secret
+│   │       ├── kustomization.yaml
+│   │       ├── nfs-external-secret.yaml # NFS credentials
+│   │       ├── quickwit-external-secret.yaml  # Quickwit credentials
+│   │       ├── registry-external-secret.yaml  # Registry creds → K8s Secret
+│   │       └── weave-external-secret.yaml  # Weave credentials
+│   │   
 │   └── controllers/                 # Helm-managed controllers
 │       ├── kustomization.yaml       # Aggregates: automation, logging, networking, observability, security
 │       ├── automation/              # Flux Image Automation
