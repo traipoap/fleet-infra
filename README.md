@@ -430,7 +430,7 @@ Each cluster has its own `flux-system/` + Kustomizations. Shared manifests live 
 
 ## Maintenance Checklist
 
-- [ ] Pin Helm chart versions (currently using `>=` ranges)
+- [x] Pin Helm chart versions (currently using `>=` ranges)
 - [ ] Switch from self-signed CA to Let's Encrypt for production domains
 - [ ] Add PodDisruptionBudgets for stateful components (Quickwit, Vector)
 - [ ] Add NetworkPolicies for namespace isolation
@@ -438,4 +438,4 @@ Each cluster has its own `flux-system/` + Kustomizations. Shared manifests live 
 - [ ] Add Kyverno/OPA policies for security enforcement
 - [ ] Multi-environment promotion (staging → production)
 - [ ] Add Velero backup for etcd + PVCs
-- [ ] Add image vulnerability scanning in CI pipeline
+- [x] Add image vulnerability scanning in CI pipeline
