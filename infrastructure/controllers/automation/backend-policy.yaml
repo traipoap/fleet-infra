@@ -10,4 +10,4 @@ spec:
     namespace: lumina
   policy:
     semver:
-      range: ">=0.0.23 <0.0.40"
+      range: ">=0.0.0"
