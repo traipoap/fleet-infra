@@ -24,7 +24,7 @@ spec:
         - name: github-registry
       containers:
         - name: backend
-          image: ghcr.io/traipoap/backend:0.0.46 # {"$imagepolicy": "flux-system:backend"}
+          image: ghcr.io/traipoap/backend:0.0.23 # {"$imagepolicy": "flux-system:backend"}
           ports:
             - name: http
               containerPort: 8080

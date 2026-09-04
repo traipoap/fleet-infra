@@ -22,7 +22,7 @@ spec:
         - name: github-registry
       containers:
         - name: frontend
-          image: ghcr.io/traipoap/frontend:0.0.24 # {"$imagepolicy": "flux-system:frontend"}
+          image: ghcr.io/traipoap/frontend:0.0.25 # {"$imagepolicy": "flux-system:frontend"}
           ports:
             - name: http
               containerPort: 4321
