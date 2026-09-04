@@ -99,6 +99,8 @@ This allows:
 ├── clusters/
 │   └── staging/                     # Per-cluster Flux CRs
 │       ├── flux-system/             # Flux bootstrap
+│       │   ├── kustomization.yaml   # Bundles components + sync
+│       │   ├── gotk-components.yaml # Flux CRDs + controllers
 │       │   └── gotk-sync.yaml       # GitRepository + Kustomization (→ ./clusters/staging)
 │       ├── apps.yaml                # Kustomization: apps (ExternalArtifact → ./staging)
 │       ├── infrastructure.yaml      # Kustomizations: infra-controllers + infra-configs
@@ -137,7 +139,15 @@ This allows:
 │       │   ├── kustomization.yaml
 │       │   ├── otel-config.yaml         # OTel Collector (alternative)
 │       │   ├── vector/              # Vector (log shipper)
+│       │   │   ├── kustomization.yaml
+│       │   │   ├── vector-source.yaml   # HelmRepository (helm.vector.dev)
+│       │   │   └── vector-release.yaml  # HelmRelease (Agent, syslog+k8s → Quickwit)
 │       │   └── quickwit/            # Quickwit (log store)
+│       │       ├── kustomization.yaml
+│       │       ├── quickwit-source.yaml  # HelmRepository (helm.quickwit.io) + Namespace
+│       │       ├── quickwit-release.yaml # HelmRelease (valuesFrom: S3 secret)
+│       │       ├── quickwit-indexer.yaml
+│       │       └── job-create-index.yaml
 │       ├── networking/              # Storage
 │       │   ├── kustomization.yaml
 │       │   └── nfs-subdir-external-provisioner.yaml
@@ -153,10 +163,9 @@ This allows:
 │           └── external-secrets.yaml # HelmRelease (external-secrets.io)
 │
 ├── scripts/
-│   └── validate.sh                  # Manifest validation
+│   └── validate.sh                  # flux-schema validation (YAML + kustomize + helm)
 │
-├── limitrange.yaml                  # Cluster-wide LimitRange
-├── require-requests.yaml            # Resource request requirements
+├── .gitignore
 └── README.md
 ```
 
@@ -170,6 +179,12 @@ This allows:
 |------|------|-----------|---------|
 | `GitRepository` | `flux-system` | `flux-system` | Points to this repo (main branch) |
 | `ArtifactGenerator` | `flux-system` | `flux-system` | Packages `infrastructure/**` and `apps/**` into artifacts |
+| `HelmRepository` | `jetstack` | `cert-manager` | cert-manager OCI charts (`quay.io/jetstack/charts`) |
+| `HelmRepository` | `external-secrets` | `external-secrets` | External Secrets charts (`charts.external-secrets.io`) |
+| `HelmRepository` | `vector-repo` | `lumina` | Vector charts (`helm.vector.dev`) |
+| `HelmRepository` | `quickwit-repo` | `lumina` | Quickwit charts (`helm.quickwit.io`) |
+| `HelmRepository` | `nfs-subdir-external-provisioner` | `nfs` | NFS provisioner (`kubernetes-sigs.github.io`) |
+| `HelmRepository` | `ww-gitops` | `flux-system` | Weave GitOps OCI charts (`ghcr.io/weaveworks/charts`) |
 
 ### Artifacts (via ArtifactGenerator)
 
@@ -189,11 +204,14 @@ This allows:
 
 ### HelmReleases
 
-| Name | Namespace | Chart | Source |
-|------|-----------|-------|--------|
-| `cert-manager` | `cert-manager` | `cert-manager` (jetstack OCI) | `jetstack` |
-| `external-secrets` | `external-secrets` | `external-secrets` | `external-secrets` |
-| `ww-gitops` | `flux-system` | `weave-gitops` | `ww-gitops` |
+| Name | Namespace | Chart | Source | Notes |
+|------|-----------|-------|--------|-------|
+| `cert-manager` | `cert-manager` | `cert-manager` (jetstack OCI) | `jetstack` | `installCRDs: true` |
+| `external-secrets` | `external-secrets` | `external-secrets` | `external-secrets` | `crds: Create` |
+| `vector` | `lumina` | `vector` | `vector-repo` (helm.vector.dev) | Agent mode, syslog+k8s → Quickwit |
+| `quickwit` | `lumina` | `quickwit` | `quickwit-repo` (helm.quickwit.io) | `valuesFrom: quickwit-s3-secret-values` |
+| `nfs-subdir-external-provisioner` | `nfs` | `nfs-subdir-external-provisioner` | `nfs-subdir-external-provisioner` | `valuesFrom: nfs-provisioner-secret-values` |
+| `ww-gitops` | `flux-system` | `weave-gitops` | `ww-gitops` | `valuesFrom: weave-secret-values` |
 
 ### Image Automation (ImageUpdateAutomation)
 
@@ -206,11 +224,34 @@ This allows:
 
 ### External Secrets
 
-| Kind | Name | Source | Purpose |
-|------|------|--------|---------|
-| `ClusterSecretStore` | `secretstore-aws` | AWS SecretsManager | Sync remote secrets → K8s |
-| `ExternalSecret` | `jwt-secret` | AWS SM | JWT_SECRET for backend |
-| `ExternalSecret` | `registry-credentials` | AWS SM | GHCR image pull creds |
+| Kind | Name | AWS SM Key | K8s Secret | Purpose |
+|------|------|-----------|------------|---------|
+| `ClusterSecretStore` | `secretstore-aws` | region: `ap-southeast-2` | — | Provider config (auth via `awssm-secret`) |
+| `ExternalSecret` | `backend-jwt-secret` | `dev/backend/jwt` → `JWT_SECRET` | `jwt-secret` | JWT for backend |
+| `ExternalSecret` | `github-registry-secret` | `dev/github-registry/frontend-backend` | `github-registry` (dockerconfigjson) | GHCR image pull creds |
+| `ExternalSecret` | `nfs-provisioner-values` | `dev/nfs/config` → `SERVER`, `PATH` | `nfs-provisioner-secret-values` (values.yaml) | NFS server endpoint |
+| `ExternalSecret` | `quickwit-s3-values` | `dev/lumina/quickwit/s3` → `access_key_id`, `secret_access_key`, `endpoint` | `quickwit-s3-secret-values` (values.yaml) | Quickwit S3/Garage storage |
+| `ExternalSecret` | `weave-values` | `dev/flux-system/weave` → `username`, `passwordHash` | `weave-secret-values` (values.yaml) | Weave GitOps admin |
+
+### Security & Cost Optimization
+
+| Kind | Name | Scope | Purpose |
+|------|------|-------|---------|
+| `LimitRange` | `cpu-defaults` | All 7 namespaces | Default CPU requests/limits per container |
+| `ClusterPolicy` (Kyverno) | `set-default-resource-requests` | Cluster-wide | Mutate Pods: inject `resources.requests/limits` if missing |
+
+**LimitRange defaults:**
+
+| Namespace | Default Request | Default Limit |
+|-----------|----------------|---------------|
+| `istio-system` | 50m | 500m |
+| All others (`cert-manager`, `external-secrets`, `flux-system`, `kube-system`, `lumina`, `nfs`) | 10m | 100m |
+
+**Kyverno mutation (applies to all Pods without explicit resource specs):**
+```
+requests: cpu=10m, memory=1Mi
+limits:   cpu=200m, memory=450Mi
+```
 
 ---
 
@@ -246,8 +287,9 @@ frontend.codezap.win
 
 ### Secrets (via External Secrets)
 
-- **JWT_SECRET**: Synced from AWS SecretsManager → K8s Secret `jwt-secret` → injected as env var
-- **Registry credentials**: Synced from AWS SecretsManager → K8s Secret `github-registry` → `imagePullSecrets`
+- **JWT_SECRET**: AWS SM (`dev/backend/jwt`) → K8s Secret `jwt-secret` → env var on backend
+- **Registry credentials**: AWS SM (`dev/github-registry/frontend-backend`) → K8s Secret `github-registry` (dockerconfigjson template) → `imagePullSecrets`
+- **Weave GitOps admin**: K8s Secret `weave-secret-values` → HelmRelease `valuesFrom` (no hardcoded passwords)
 
 ---
 
@@ -276,16 +318,27 @@ Pod logs ──► Vector (k8s_logs + syslog) ──► Quickwit (HTTP sink)
 ghcr.io/traipoap/backend:0.0.47 pushed
     │
     ▼
-ImageRepository (poll every 5m)
+ImageRepository (poll every 5m, namespace: lumina)
     │
     ▼
 ImagePolicy (semver: pick highest ≥ 0.0.0)
     │
     ▼
-ImageUpdateAutomation (update tag in apps/staging/ → commit as fluxcdbot → push)
+ImageUpdateAutomation (Setters strategy)
+    │  └─ updates kustomize `images` field in apps/staging/kustomization.yaml
+    │     commit as fluxcdbot → push to main
     │
     ▼
 Flux Kustomization: apps (detects diff → deploys new image)
+```
+
+**Setters mechanism:** Flux updates the `newTag` in `apps/staging/kustomization.yaml`:
+```yaml
+images:
+  - name: ghcr.io/traipoap/backend
+    newTag: "0.0.47"  # ← Flux auto-updates this value
+  - name: ghcr.io/traipoap/frontend
+    newTag: "0.0.28"  # ← Flux auto-updates this value
 ```
 
 ---
@@ -325,9 +378,24 @@ flux reconcile kustomization apps -n flux-system --with-source
 
 ### Validate Manifests
 
+Uses **flux-schema** (Flux Schema plugin) with the [Flux Ecosystem Catalog](https://schemas.fluxoperator.dev/):
+
 ```bash
+# Validate all YAML + kustomize overlays
 ./scripts/validate.sh
+
+# Include Helm chart rendering
+./scripts/validate.sh -H
+
+# Custom directory + output bundle
+./scripts/validate.sh -d ./infrastructure -b /tmp/bundle.yaml
+
+# Exclude specific dirs
+./scripts/validate.sh -e .scannerwork
 ```
+
+**Validates:** Standalone YAML, Kustomize overlays, Helm charts (optional `-H`)
+**Prerequisites:** `flux-schema` ≥ 0.9, `kustomize`/`kubectl`, `helm` ≥ 4.0 (for `-H`)
 
 ---
 
