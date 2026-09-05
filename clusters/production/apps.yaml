@@ -11,6 +11,6 @@ spec:
   sourceRef:
     kind: ExternalArtifact
     name: apps
-  path: ./apps/production
+  path: ./production
   prune: true
   wait: true
