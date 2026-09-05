@@ -5,10 +5,10 @@ metadata:
 spec:
   limits:
   - default:          # Limits เริ่มต้น (50% ของ CPU 1 Core)
-      cpu: 500m
+      cpu: 512m
       memory: 512Mi
     defaultRequest:   # Requests เริ่มต้น
-      cpu: 50m
+      cpu: 64m
       memory: 128Mi
     max:              # สเปกสูงสุดต่อ Container (ป้องกันการจองเกิน 1 Node)
       cpu: "2"
