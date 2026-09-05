@@ -5,7 +5,7 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: "cluster-ca"
 spec:
-  gatewayClassName: istio-waypoint
+  gatewayClassName: istio
   listeners:
   - name: http
     protocol: HTTP
@@ -36,12 +36,12 @@ spec:
     parametersRef:
       group: ""
       kind: ConfigMap
-      name: production-waypoint-options
+      name: waypoint-options
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: production-waypoint-options
+  name: waypoint-options
 
 data:
   deployment: |
