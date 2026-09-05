@@ -4,12 +4,8 @@ metadata:
   name: app-gateway
   annotations:
     cert-manager.io/cluster-issuer: "cluster-ca"
-    gateway.istio.io/proxy-cpu-limit: "10m"
-    gateway.istio.io/proxy-cpu-request: "5m"
-    gateway.istio.io/proxy-memory-limit: "100Mi"
-    gateway.istio.io/proxy-memory-request: "50Mi"
 spec:
-  gatewayClassName: istio
+  gatewayClassName: istio-waypoint
   listeners:
   - name: http
     protocol: HTTP
@@ -18,6 +14,7 @@ spec:
     allowedRoutes:
       namespaces:
         from: "All"
+
   - name: https
     protocol: HTTPS
     port: 443
@@ -30,3 +27,33 @@ spec:
     allowedRoutes:
       namespaces:
         from: All
+
+  - name: mesh
+    port: 15008
+    protocol: HBONE
+
+  infrastructure:
+    parametersRef:
+      group: ""
+      kind: ConfigMap
+      name: production-waypoint-options
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: production-waypoint-options
+
+data:
+  deployment: |
+    spec:
+      template:
+        spec:
+          containers:
+          - name: istio-proxy
+            resources:
+              requests:
+                cpu: 5m
+                memory: 50Mi
+              limits:
+                cpu: 10m
+                memory: 100Mi
