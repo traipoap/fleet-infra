@@ -3,7 +3,6 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:
   name: frontend
-  namespace: lumina
 spec:
   image: ghcr.io/traipoap/frontend
   interval: 5m0s
