@@ -96,19 +96,12 @@ This allows:
 │   │   ├── gateway.yaml             # Istio Gateway (HTTP + HTTPS, TLS)
 │   │   ├── httproute.yaml           # Path-based routing rules
 │   │   └── ingress.yaml             # Legacy fallback
-│   ├── dev/                         # Dev overlay (patches, image tags)
-│   │   └── kustomization.yaml       # Extends ../base
 │   ├── staging/                     # Staging overlay (patches, image tags)
 │   │   └── kustomization.yaml       # Extends ../base
 │   └── production/                  # Production overlay (patches, image tags)
 │       └── kustomization.yaml       # Extends ../base
 │
 ├── clusters/
-│   ├── dev/                         # Per-cluster Flux CRs (dev)
-│   │   ├── flux-system/             # Flux bootstrap (gotk-components + gotk-sync → ./clusters/dev)
-│   │   ├── apps.yaml                # Kustomization: apps (ExternalArtifact → ./dev)
-│   │   ├── infrastructure.yaml      # Kustomizations: infra-controllers + infra-configs
-│   │   └── artifacts.yaml           # ArtifactGenerator (packages infra + apps)
 │   ├── staging/                     # Per-cluster Flux CRs (staging)
 │   │   ├── flux-system/             # Flux bootstrap
 │   │   │   ├── kustomization.yaml   # Bundles components + sync
@@ -287,7 +280,6 @@ limits:   cpu=200m, memory=450Mi
 
 ```
 apps/base/         ← shared manifests (deployments, services, gateway)
-apps/dev/          ← dev overlay (kustomize patches, image tags)
 apps/staging/      ← staging overlay (kustomize patches, image tags)
 apps/production/   ← production overlay (kustomize patches, image tags)
                      └── each kustomization.yaml extends ../base
@@ -296,7 +288,7 @@ apps/production/   ← production overlay (kustomize patches, image tags)
 ### Routing
 
 ```
-frontend.codezap.win
+app.example.com
   ├── /*                  → frontend-svc:4321   (Astro static site)
   ├── /api/auth/login     → backend-svc:8080    (auth)
   ├── /api/auth/refresh   → backend-svc:8080    (token refresh)
@@ -310,7 +302,7 @@ frontend.codezap.win
 
 - **Gateway** terminates TLS on port 443
 - **ClusterIssuer**: `cluster-ca` (self-signed CA)
-- Certificate: `frontend-codezap-win-tls`
+- Certificate: `app-example-com-tls`
 - Gateway API class: `istio`
 
 ### Secrets (via External Secrets)
@@ -385,7 +377,7 @@ flux bootstrap github \
   --personal
 ```
 
-> `--path` is per cluster: `./clusters/dev`, `./clusters/staging`, or `./clusters/production`.
+> `--path` is per cluster: `./clusters/staging` or `./clusters/production`.
 
 ### Verify
 
@@ -435,9 +427,8 @@ Uses **flux-schema** (Flux Schema plugin) with the [Flux Ecosystem Catalog](http
 
 | Env | Cluster bootstrap | App overlay | Image Automation |
 |-----|-------------------|-------------|------------------|
-| `dev` | `clusters/dev/` | `apps/dev/` | — |
 | `staging` | `clusters/staging/` | `apps/staging/` | `clusters/staging/image-automation/` |
-| `production` | `clusters/production/` | `apps/production/` | — |
+| `production` | `clusters/production/` | `apps/production/` | `clusters/production/image-automation/` |
 
 Each cluster has its own `flux-system/` bootstrap + Kustomizations. Shared manifests live in `apps/base/`.
 
@@ -477,7 +468,7 @@ flux bootstrap github \
 - [ ] Add PodDisruptionBudgets for stateful components (Quickwit, Vector)
 - [ ] Add NetworkPolicies for namespace isolation
 - [ ] Configure Flux alerts (Slack/Email) via `Alert` resources
-- [ ] Add Kyverno/OPA policies for security enforcement
+- [x] Add Kyverno/OPA policies for security enforcement
 - [ ] Multi-environment promotion (staging → production)
 - [ ] Add Velero backup for etcd + PVCs
 - [x] Add image vulnerability scanning in CI pipeline
