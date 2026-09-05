@@ -29,3 +29,16 @@ spec:
     name: infrastructure
   path: ./configs
   prune: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: image-automation
+  namespace: flux-system
+spec:
+  interval: 30m
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./clusters/staging/image-automation
