@@ -20,5 +20,5 @@ spec:
       copy:
         - from: "@monorepo/apps/base/**"
           to: "@artifact/base/"
-        - from: "@monorepo/apps/staging/**"
-          to: "@artifact/staging/"
+        - from: "@monorepo/apps/production/**"
+          to: "@artifact/production/"
