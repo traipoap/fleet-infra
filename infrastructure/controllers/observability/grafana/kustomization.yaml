@@ -87,7 +87,7 @@ patches:
               url: http://loki:3100
             - name: Quickwit Logs
               type: quickwit-quickwit-datasource
-              url: http://quickwit-searcher.lumina.svc.cluster.local:7280/api/v1
+              url: http://quickwit-searcher.logging.svc.cluster.local:7280/api/v1
               jsonData:
                 index: 'syslogs'
                 logMessageField: message
