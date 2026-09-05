@@ -4,6 +4,62 @@ resources:
   - ../base
 images:
   - name: ghcr.io/traipoap/backend
-    newTag: "0.0.23" # {"$imagepolicy": "lumina:backend:tag"}
+    newTag: "0.0.23" # {"$imagepolicy": "production:backend:tag"}
   - name: ghcr.io/traipoap/frontend
-    newTag: "0.0.27" # {"$imagepolicy": "lumina:frontend:tag"}
+    newTag: "0.0.27" # {"$imagepolicy": "production:frontend:tag"}
+
+patches:
+  - target:
+      kind: Gateway
+      name: app-gateway-istio
+    patch: |-
+      apiVersion: networking.istio.io/v1beta1
+      kind: Gateway
+      metadata:
+        name: app-gateway-istio
+      spec:
+        servers:
+          - port:
+              number: 443
+              name: https
+              protocol: HTTPS
+            tls:
+              mode: SIMPLE
+              credentialName: app-traipoap-com-tls
+            hostname: "app.traipoap.com"
+          - port:
+              number: 80
+              name: http
+              protocol: HTTP
+            hostname: "app.traipoap.com"
+
+  - target:
+      kind: ConfigMap
+      name: app-config
+    patch: |-
+      - op: replace
+        path: /ALLOWED_HOSTS
+        value: "app.traipoap.com,.traipoap.com"
+      - op: replace
+        path: /CORS_ORIGINS
+        value: "https://app.traipoap.com"
+
+  - target:
+      kind: HTTPRoute
+      name: app-httproute
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/hosts
+        value: "app.traipoap.com"
+
+  - target:
+      kind: Certificate
+      name: app-codezap-win-tls
+    patch: |-
+      - op: replace
+        path: /
+        value:
+          name: app-traipoap-com-tls
+          secretName: app-traipoap-com-tls
+
+namespace: production
