@@ -11,55 +11,104 @@ images:
 patches:
   - target:
       kind: Gateway
-      name: app-gateway-istio
+      name: app-gateway
     patch: |-
-      apiVersion: networking.istio.io/v1beta1
+      apiVersion: gateway.networking.k8s.io/v1
       kind: Gateway
       metadata:
-        name: app-gateway-istio
+        name: app-gateway
+        annotations:
+          cert-manager.io/cluster-issuer: "cluster-ca"
       spec:
-        servers:
-          - port:
-              number: 443
-              name: https
-              protocol: HTTPS
-            tls:
-              mode: SIMPLE
-              credentialName: app-traipoap-com-tls
-            hostname: "app.traipoap.com"
-          - port:
-              number: 80
-              name: http
-              protocol: HTTP
-            hostname: "app.traipoap.com"
+        gatewayClassName: istio
+        listeners:
+        - name: http
+          protocol: HTTP
+          port: 80
+          hostname: "app.traipoap.com"
+          allowedRoutes:
+            namespaces:
+              from: "All"
+
+        - name: https
+          protocol: HTTPS
+          port: 443
+          hostname: "app.traipoap.com"
+          tls:
+            mode: Terminate
+            certificateRefs:
+            - name: app-traipoap-com-tls
+              kind: Secret
+          allowedRoutes:
+            namespaces:
+              from: All
 
   - target:
       kind: ConfigMap
       name: app-config
     patch: |-
-      - op: replace
-        path: /ALLOWED_HOSTS
-        value: "app.traipoap.com,.traipoap.com"
-      - op: replace
-        path: /CORS_ORIGINS
-        value: "https://app.traipoap.com"
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: app-config
+      data:
+        # Frontend configuration
+        ALLOWED_HOSTS: "app.traipoap.com,.traipoap.com"
+        API_PROXY_TARGET: "http://backend-svc:8080"
+
+        # Backend configuration
+        BACKEND_PORT: "8080"
+        CORS_ORIGINS: "https://app.traipoap.com"
+        QUICKWIT_URL: "http://quickwit-searcher.logging.svc.cluster.local:7280"
+
+        # Database configuration
+        DATABASE_PATH: "backend/data/users.db"
+
 
   - target:
       kind: HTTPRoute
       name: app-httproute
     patch: |-
-      - op: replace
-        path: /spec/rules/0/hosts
-        value: "app.traipoap.com"
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      metadata:
+        name: app-httproute
+      spec:
+        parentRefs:
+        - name: app-gateway
+        hostnames:
+        - "app.traipoap.com"
+        rules:
+        - matches:
+          - path:
+              type: PathPrefix
+              value: /
+          backendRefs:
+          - name: frontend-svc
+            port: 4321
+
+        - matches:
+          - path:
+              type: PathPrefix
+              value: /api
+          backendRefs:
+          - name: backend-svc
+            port: 8080
 
   - target:
       kind: Certificate
-      name: app-codezap-win-tls
+      name: app-traipoap-com-tls
     patch: |-
-      - op: replace
-        path: /
-        value:
-          name: app-traipoap-com-tls
-          secretName: app-traipoap-com-tls
+      apiVersion: cert-manager.io/v1
+      kind: Certificate
+      metadata:
+        name: app-traipoap-com-tls
+      spec:
+        secretName: app-traipoap-com-tls
+        dnsNames:
+        - "app.traipoap.com"
+        issuerRef:
+          name: cluster-ca-issuer
+          kind: ClusterIssuer
 
 namespace: production
