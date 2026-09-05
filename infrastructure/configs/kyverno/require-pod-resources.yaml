@@ -3,7 +3,7 @@ kind: ClusterPolicy
 metadata:
   name: require-pod-resources
 spec:
-  validationFailureAction: Audit # โหมดตรวจสอบอย่างเดียว ไม่บล็อกการ Deploy
+  validationFailureAction: Audit # Audit is logged in a PolicyReport or ClusterPolicyReport / Enforce is blocked when the resource does not comply
   background: true
   rules:
   - name: validate-resource-limits

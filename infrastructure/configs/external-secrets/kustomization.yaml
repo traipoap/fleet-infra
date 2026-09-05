@@ -2,8 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - aws-secret-store.yaml
-  - jwt-external-secret.yaml
-  - registry-external-secret.yaml
   - nfs-external-secret.yaml
   - quickwit-external-secret.yaml
   - weave-external-secret.yaml
