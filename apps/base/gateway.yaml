@@ -5,6 +5,10 @@ metadata:
   namespace: lumina
   annotations:
     cert-manager.io/cluster-issuer: "cluster-ca"
+    gateway.istio.io/proxy-cpu-limit: "10m"
+    gateway.istio.io/proxy-cpu-request: "5m"
+    gateway.istio.io/proxy-memory-limit: "100Mi"
+    gateway.istio.io/proxy-memory-request: "50Mi"
 spec:
   gatewayClassName: istio
   listeners:
