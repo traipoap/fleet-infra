@@ -2,8 +2,11 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: quickwit-create-index
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
 spec:
-  backoffLimit: 5
+  backoffLimit: 2
   ttlSecondsAfterFinished: 100
   template:
     spec:
@@ -11,34 +14,45 @@ spec:
       containers:
         - name: create-index
           image: curlimages/curl:latest
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
           args:
             - /bin/sh
             - -c
             - |
+              QUICKWIT_URL="http://quickwit-searcher:7280/api/v1"
+
               echo "Waiting for Quickwit to be ready..."
-              until curl -s http://quickwit-searcher:7280/api/v1/version; do
-                sleep 5;
+              until curl -s "$QUICKWIT_URL/version" > /dev/null; do
+                sleep 5
               done
 
               echo "Checking if index 'syslogs' exists..."
-              if curl -s -f http://quickwit-searcher:7280/api/v1/indexes/syslogs > /dev/null 2>&1; then
-                echo "Index already exists, skipping creation."
-                exit 0  # <--- ออกจากสคริปต์ทันที: ถ้ามี syslogs indexes อยู่แล้ว
+              if curl -s -f "$QUICKWIT_URL/indexes/syslogs" > /dev/null 2>&1; then
+                echo "Index 'syslogs' already exists. Skipping creation."
+                exit 0
               fi
 
-              echo "Index not found. Creating index..."
-              RESPONSE=$(curl -s -w "\n%{http_code}" -X POST http://quickwit-searcher:7280/api/v1/indexes \
+              echo "Creating index..."
+              RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$QUICKWIT_URL/indexes" \
                 --header "content-type: application/yaml" \
                 --data-binary @/config/quickwit.yaml)
 
               HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
               BODY=$(echo "$RESPONSE" | sed '$d')
 
-              if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ]; then
-                echo "Index created successfully."
+              # 200/201 = Created, 409 = Conflict (Index มีอยู่แล้ว)
+              if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ] || [ "$HTTP_CODE" -eq 409 ]; then
+                echo "Index setup completed successfully (HTTP $HTTP_CODE)."
+                exit 0
               else
-                echo "Failed to create index: $BODY"
-                exit 1 # ให้ Job ล้มเหลวถ้าสร้างไม่สำเร็จ เพื่อจะได้ Retry
+                echo "Failed to create index (HTTP $HTTP_CODE): $BODY"
+                exit 1
               fi
           volumeMounts:
             - name: config-volume
