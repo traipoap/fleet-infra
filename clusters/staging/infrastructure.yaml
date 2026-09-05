@@ -21,6 +21,8 @@ metadata:
   name: infra-configs
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: infra-controllers
   interval: 1h
   retryInterval: 2m
   timeout: 5m
@@ -36,6 +38,8 @@ metadata:
   name: image-automation
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: apps
   interval: 30m
   prune: true
   sourceRef:
