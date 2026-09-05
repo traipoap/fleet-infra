@@ -9,8 +9,8 @@ spec:
     name: letsencrypt-staging
     kind: ClusterIssuer
   dnsNames:
-    - "*.codezap.win"
-    - "codezap.win"
+    - "*.example.com"
+    - "example.com"
   privateKey:
     algorithm: RSA
     size: 2048
