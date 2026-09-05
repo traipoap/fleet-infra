@@ -1,7 +1,7 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: frontend-gateway
+  name: app-gateway
   namespace: lumina
   annotations:
     cert-manager.io/cluster-issuer: "cluster-ca"
@@ -11,18 +11,18 @@ spec:
   - name: http
     protocol: HTTP
     port: 80
-    hostname: "frontend.codezap.win"
+    hostname: "app.codezap.win"
     allowedRoutes:
       namespaces:
         from: "All"
   - name: https
     protocol: HTTPS
     port: 443
-    hostname: "frontend.codezap.win"
+    hostname: "app.codezap.win"
     tls:
       mode: Terminate
       certificateRefs:
-      - name: frontend-codezap-win-tls
+      - name: app-codezap-win-tls
         kind: Secret
     allowedRoutes:
       namespaces:
