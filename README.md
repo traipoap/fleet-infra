@@ -29,6 +29,7 @@ Part of the [gitops-platform](https://github.com/traipoap/gitops-platform) proje
 │  Kustomization: infra-controllers  ──►  ./controllers                   │
 │  Kustomization: infra-configs      ──►  ./configs                       │
 │  Kustomization: apps               ──►  ./staging                       │
+│  Kustomization: image-automation   ──►  clusters/staging/image-automation │
 │                                                                         │
 │  Controllers (via HelmReleases):                                        │
 │  ├── cert-manager          (jetstack OCI)                               │
@@ -102,8 +103,16 @@ This allows:
 │       │   ├── kustomization.yaml   # Bundles components + sync
 │       │   ├── gotk-components.yaml # Flux CRDs + controllers
 │       │   └── gotk-sync.yaml       # GitRepository + Kustomization (→ ./clusters/staging)
+│       ├── image-automation/        # Flux Image Automation (per-cluster)
+│       │   ├── kustomization.yaml
+│       │   ├── backend-registry.yaml   # ImageRepository
+│       │   ├── backend-policy.yaml     # ImagePolicy (semver)
+│       │   ├── backend-automation.yaml # ImageUpdateAutomation
+│       │   ├── frontend-registry.yaml
+│       │   ├── frontend-policy.yaml
+│       │   └── frontend-automation.yaml
 │       ├── apps.yaml                # Kustomization: apps (ExternalArtifact → ./staging)
-│       ├── infrastructure.yaml      # Kustomizations: infra-controllers + infra-configs
+│       ├── infrastructure.yaml      # Kustomizations: infra-controllers + infra-configs + image-automation
 │       └── artifacts.yaml           # ArtifactGenerator (packages infra + apps)
 │
 ├── infrastructure/                  # Platform components
@@ -126,15 +135,7 @@ This allows:
 │   │       └── weave-external-secret.yaml  # Weave credentials
 │   │   
 │   └── controllers/                 # Helm-managed controllers
-│       ├── kustomization.yaml       # Aggregates: automation, logging, networking, observability, security
-│       ├── automation/              # Flux Image Automation
-│       │   ├── kustomization.yaml
-│       │   ├── backend-registry.yaml   # ImageRepository
-│       │   ├── backend-policy.yaml     # ImagePolicy (semver)
-│       │   ├── backend-automation.yaml # ImageUpdateAutomation
-│       │   ├── frontend-registry.yaml
-│       │   ├── frontend-policy.yaml
-│       │   └── frontend-automation.yaml
+│       ├── kustomization.yaml       # Aggregates: logging, networking, observability, security
 │       ├── logging/                 # Log pipeline
 │       │   ├── kustomization.yaml
 │       │   ├── otel-config.yaml         # OTel Collector (alternative)
@@ -198,9 +199,10 @@ This allows:
 | # | Name | Source | Path | Purpose |
 |---|------|--------|------|---------|
 | 1 | `flux-system` | `GitRepository` | `./clusters/staging` | Bootstrap Flux + ArtifactGenerator |
-| 2 | `infra-controllers` | `ExternalArtifact` | `./controllers` | HelmReleases: cert-manager, external-secrets, vector, quickwit, nfs, weave, image automation |
+| 2 | `infra-controllers` | `ExternalArtifact` | `./controllers` | HelmReleases: cert-manager, external-secrets, vector, quickwit, nfs, weave |
 | 3 | `infra-configs` | `ExternalArtifact` | `./configs` | ClusterIssuers, ExternalSecrets |
 | 4 | `apps` | `ExternalArtifact` | `./staging` | App deployments + overlays |
+| 5 | `image-automation` | `GitRepository` | `./clusters/staging/image-automation` | ImageRepository + ImagePolicy + ImageUpdateAutomation |
 
 ### HelmReleases
 
@@ -220,7 +222,7 @@ This allows:
 | `backend` | `ghcr.io/traipoap/backend` | semver `>=0.0.0` | `./apps/staging` | Setters |
 | `frontend` | `ghcr.io/traipoap/frontend` | semver `>=0.0.0` | `./apps/staging` | Setters |
 
-> Flux auto-updates image tags in `apps/staging/` and commits as `fluxcdbot`.
+> CRs live in `clusters/staging/image-automation/` (namespace: `lumina`). Flux auto-updates image tags in `apps/staging/` and commits as `fluxcdbot`.
 
 ### External Secrets
 
@@ -374,6 +376,7 @@ kubectl get pods -A
 flux reconcile kustomization flux-system -n flux-system --with-source
 flux reconcile kustomization infra-controllers -n flux-system --with-source
 flux reconcile kustomization apps -n flux-system --with-source
+flux reconcile kustomization image-automation -n flux-system --with-source
 ```
 
 ### Validate Manifests
@@ -407,6 +410,8 @@ To deploy to a second cluster (e.g., `production`):
 # 1. Create the cluster bootstrap
 cp -r clusters/staging clusters/production
 # Update gotk-sync.yaml path → ./clusters/production
+# Update image-automation: Kustomization path → ./clusters/production/image-automation,
+# and ImageUpdateAutomation update.path → ./apps/production
 
 # 2. Create the env overlay
 cp -r apps/staging apps/production
@@ -424,7 +429,7 @@ flux bootstrap github \
   --personal
 ```
 
-Each cluster has its own `flux-system/` + Kustomizations. Shared manifests live in `apps/base/`.
+Each cluster has its own `flux-system/`, `image-automation/` + Kustomizations. Shared manifests live in `apps/base/`.
 
 ---
 
