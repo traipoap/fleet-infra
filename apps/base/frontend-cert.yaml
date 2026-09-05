@@ -2,7 +2,6 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: app-codezap-win-tls
-  namespace: lumina
 spec:
   secretName: app-codezap-win-tls
   dnsNames:

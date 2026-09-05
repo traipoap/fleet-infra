@@ -2,7 +2,6 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: app-gateway
-  namespace: lumina
   annotations:
     cert-manager.io/cluster-issuer: "cluster-ca"
     gateway.istio.io/proxy-cpu-limit: "10m"

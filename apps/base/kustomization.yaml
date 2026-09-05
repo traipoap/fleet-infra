@@ -13,3 +13,7 @@ resources:
   - httproute.yaml
   - backend-pvc.yaml
   - frontend-cert.yaml
+  - jwt-external-secret.yaml
+  - registry-external-secret.yaml
+  - container-limits.yaml
+namespace: base

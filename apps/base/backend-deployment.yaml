@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: lumina
   labels:
     app: backend
 spec:
@@ -31,7 +30,7 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: lumina-config
+                name: app-config
           env:
           - name: JWT_SECRET
             valueFrom:

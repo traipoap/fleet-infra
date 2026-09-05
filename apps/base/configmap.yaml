@@ -1,8 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: lumina-config
-  namespace: lumina
+  name: app-config
 data:
   # Frontend configuration
   ALLOWED_HOSTS: "app.codezap.win,.codezap.win"

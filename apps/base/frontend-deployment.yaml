@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
-  namespace: lumina
   labels:
     app: frontend
 spec:
@@ -29,7 +28,7 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: lumina-config
+                name: app-config
           resources: {}
           livenessProbe:
             httpGet:
