@@ -3,7 +3,8 @@ kind: ClusterPolicy
 metadata:
   name: require-pod-resources
 spec:
-  validationFailureAction: Audit # เปลี่ยนเป็น Enforce เมื่อพร้อม
+  validationFailureAction: Audit # โหมดตรวจสอบอย่างเดียว ไม่บล็อกการ Deploy
+  background: true
   rules:
   - name: validate-resource-limits
     match:
@@ -11,8 +12,17 @@ spec:
       - resources:
           kinds:
           - Pod
+    exclude:
+      any:
+      - resources:
+          namespaces:
+          - kube-system
+          - istio-system
+          - kyverno
+          - logging
+          - flux-system
     validate:
-      message: "ต้องกำหนด CPU และ Memory ในส่วนของ requests และ limits เสมอ"
+      message: "ต้องกำหนด resources.requests และ resources.limits (cpu, memory) ใน Pod ทุกครั้ง"
       pattern:
         spec:
           containers:

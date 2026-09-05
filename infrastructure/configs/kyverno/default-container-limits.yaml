@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-container-limits
+  namespace: lumina # ปรับเปลี่ยนเป็น Namespace ที่ต้องการใช้งาน
+spec:
+  limits:
+  - default:          # Limits เริ่มต้น (50% ของ CPU 1 Core)
+      cpu: 500m
+      memory: 512Mi
+    defaultRequest:   # Requests เริ่มต้น
+      cpu: 50m
+      memory: 128Mi
+    max:              # สเปกสูงสุดต่อ Container (ป้องกันการจองเกิน 1 Node)
+      cpu: "1"
+      memory: 2Gi
+    min:              # สเปกต่ำสุดที่ยอมรับได้
+      cpu: 10m
+      memory: 16Mi
+    type: Container
