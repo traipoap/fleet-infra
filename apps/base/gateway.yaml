@@ -4,10 +4,6 @@ metadata:
   name: app-gateway
   annotations:
     cert-manager.io/cluster-issuer: "cluster-ca"
-    sidecar.istio.io/proxyCPU: "5"
-    sidecar.istio.io/proxyCPULimit: "10"
-    sidecar.istio.io/proxyMemory: "50"
-    sidecar.istio.io/proxyMemoryLimit: "100"
 spec:
   gatewayClassName: istio
   listeners:
