@@ -16,26 +16,5 @@ resources:
   - jwt-external-secret.yaml
   - registry-external-secret.yaml
   - container-limits.yaml
+  -
 namespace: base
-
-patches:
-  - target:
-      kind: Deployment
-      name: app-gateway
-    patch: |
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: app-gateway
-      spec:
-        template:
-          spec:
-            containers:
-            - name: istio-proxy
-              resources:
-                requests:
-                  cpu: 5m
-                  memory: 50Mi
-                limits:
-                  cpu: 10m
-                  memory: 100Mi
