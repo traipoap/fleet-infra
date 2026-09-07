@@ -1,0 +1,11 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: app-codezap-win-tls
+spec:
+  secretName: app-traipoap-com-tls
+  dnsNames:
+  - "app.traipoap.com"
+  issuerRef:
+    name: cluster-ca-issuer
+    kind: ClusterIssuer
