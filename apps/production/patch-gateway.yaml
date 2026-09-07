@@ -1,0 +1,15 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: app-gateway
+spec:
+  listeners:
+  - name: http
+    hostname: "app.traipoap.com"
+
+  - name: https
+    hostname: "app.traipoap.com"
+    tls:
+      certificateRefs:
+      - name: app-traipoap-com-tls
+        kind: Secret
