@@ -50,7 +50,7 @@ spec:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: production
+  name: prod
   labels:
     istio.io/dataplane-mode: ambient
-    name: production
+    name: prod

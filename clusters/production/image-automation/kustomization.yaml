@@ -8,4 +8,4 @@ resources:
 - backend-policy.yaml
 - backend-registry.yaml
 
-namespace: production
+namespace: prod
