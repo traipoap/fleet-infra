@@ -10,8 +10,14 @@ images:
     newTag: "0.0.27" # {"$imagepolicy": "production:frontend:tag"}
 
 patches:
-  - path: patch-gateway.yaml
-  - path: patch-config.yaml
-  - path: patch-httproute.yaml
+  - target:
+      group: gateway.networking.k8s.io
+      version: v1
+      kind: Gateway
+      name: app-gateway
+    patch: |-
+      - op: replace
+        path: /spec/listeners/0/hostname
+        value: app.traipoap.com
 
 namespace: production
