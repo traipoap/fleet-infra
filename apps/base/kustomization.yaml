@@ -12,7 +12,7 @@ resources:
   - gateway.yaml
   - httproute.yaml
   - backend-pvc.yaml
-  - frontend-cert.yaml
+  - frontend-tls.yaml
   - jwt-external-secret.yaml
   - registry-external-secret.yaml
   - container-limits.yaml
