@@ -11,7 +11,7 @@ images:
 patches:
   - target:
       group: gateway.networking.k8s.io
-      version: v1
+      version: v1alpha3
       kind: Gateway
       name: app-gateway
     patch: |-
