@@ -9,24 +9,9 @@ images:
     newTag: "0.0.27" # {"$imagepolicy": "production:frontend:tag"}
 
 patches:
-  - target:
-      kind: Gateway
-      name: app-gateway
-    path: patch-gateway.yaml
-
-  - target:
-      kind: ConfigMap
-      name: app-config
-    path: patch-config.yaml
-
-  - target:
-      kind: HTTPRoute
-      name: app-httproute
-    path: patch-httproute.yaml
-
-  - target:
-      kind: Certificate
-      name: app-traipoap-com-tls
-    path: patch-cert.yaml
+  - path: patch-gateway.yaml
+  - path: patch-config.yaml
+  - path: patch-httproute.yaml
+  - path: patch-cert.yaml
 
 namespace: production
