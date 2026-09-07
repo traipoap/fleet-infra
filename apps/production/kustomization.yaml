@@ -12,7 +12,7 @@ patches:
   - target:
       kind: Gateway
       name: app-gateway
-    path: patch-gatway.yaml
+    path: patch-gateway.yaml
 
   - target:
       kind: ConfigMap
