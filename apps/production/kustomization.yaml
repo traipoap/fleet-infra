@@ -14,4 +14,4 @@ patches:
   - path: patch-config.yaml
   - path: patch-httproute.yaml
 
-namespace: production
+namespace: prod

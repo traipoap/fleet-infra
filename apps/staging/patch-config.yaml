@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  # Frontend configuration
+  ALLOWED_HOSTS: "app.traipoap.com,.traipoap.com"
+
+  # Backend configuration
+  CORS_ORIGINS: "https://app.traipoap.com"

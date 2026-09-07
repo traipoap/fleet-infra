@@ -1,7 +1,7 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: frontend-tls
+  name: app-codezap-win-tls
 spec:
   secretName: app-traipoap-com-tls
   dnsNames:
