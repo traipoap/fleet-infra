@@ -5,6 +5,8 @@ metadata:
   name: infra-controllers
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: flux-system
   interval: 1h
   retryInterval: 2m
   timeout: 5m
@@ -44,3 +46,11 @@ spec:
     kind: GitRepository
     name: flux-system
   path: ./clusters/staging/image-automation
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: staging
+  labels:
+    istio.io/dataplane-mode: ambient
+    name: staging
