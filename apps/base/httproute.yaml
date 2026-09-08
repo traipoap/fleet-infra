@@ -11,15 +11,15 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /
-    backendRefs:
-    - name: frontend-svc
-      port: 4321
-
-  - matches:
-    - path:
-        type: PathPrefix
         value: /api
     backendRefs:
     - name: backend-svc
       port: 8080
+
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: frontend-svc
+      port: 4321
