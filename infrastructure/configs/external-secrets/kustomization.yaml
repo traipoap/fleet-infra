@@ -4,4 +4,4 @@ resources:
   - aws-secret-store.yaml
   - nfs-external-secret.yaml
   - quickwit-external-secret.yaml
-  - weave-external-secret.yaml
+#  - weave-external-secret.yaml
