@@ -22,7 +22,7 @@ spec:
     tls:
       mode: Terminate
       certificateRefs:
-      - name: app-codezap-win-tls
+      - name: frontend-tls
         kind: Secret
     allowedRoutes:
       namespaces:
