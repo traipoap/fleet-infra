@@ -3,6 +3,9 @@ kind: Certificate
 metadata:
   name: frontend-tls
 spec:
+  # Name ref: overrides the base secretName with the staging domain's Secret.
+  # patch-gateway.yaml's tls.certificateRefs must reference this Secret name
+  # (it currently still points at the base name "frontend-tls").
   secretName: app-traipoap-com-tls
   dnsNames:
   - "app.traipoap.com"
