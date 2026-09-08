@@ -3,7 +3,7 @@ kind: Gateway
 metadata:
   name: app-gateway
   annotations:
-    cert-manager.io/cluster-issuer: "cluster-ca"
+    cert-manager.io/cluster-issuer: "letsencrypt-cloudflare"
 spec:
   gatewayClassName: istio
   listeners:
