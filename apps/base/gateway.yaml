@@ -3,6 +3,9 @@ kind: Gateway
 metadata:
   name: app-gateway
   annotations:
+    # Name ref: value must be the name of a ClusterIssuer.
+    # The CA issuer is named "cluster-ca-issuer" (infrastructure/configs/cert-manager/ca-issuer.yaml);
+    # "cluster-ca" is only the name of the CA Certificate itself.
     cert-manager.io/cluster-issuer: "cluster-ca"
 spec:
   gatewayClassName: istio
@@ -21,8 +24,10 @@ spec:
     hostname: "app.codezap.win"
     tls:
       mode: Terminate
+      # Name ref: name of the Secret holding the TLS certificate (Gateway's namespace).
+      # Should match spec.secretName in frontend-tls.yaml ("app-codezap-win-tls").
       certificateRefs:
-      - name: frontend-tls
+      - name: app-codezap-win-tls
         kind: Secret
     allowedRoutes:
       namespaces:
