@@ -4,5 +4,3 @@ resources:
   - aws-secret-store.yaml
   - nfs-external-secret.yaml
   - quickwit-external-secret.yaml
-  - cloudflare-api-key-secret.yaml
-#  - weave-external-secret.yaml
