@@ -5,4 +5,5 @@ resources:
 - grafana/
 - kiali/
 - prometheus/
-#- weave-gitops.yaml
+- flux-operator.yaml
+- flux-web.yaml

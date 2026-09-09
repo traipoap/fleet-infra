@@ -1,0 +1,25 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: flux-operator
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  type: oci
+  url: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: flux-operator
+  namespace: flux-system
+spec:
+  chart:
+    spec:
+      chart: flux-operator
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: flux-operator
+  interval: 1m0s
