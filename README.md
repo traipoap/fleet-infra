@@ -37,9 +37,8 @@ Part of the [gitops-platform](https://github.com/traipoap/gitops-platform) proje
 │  ├── vector                (log shipper)                                │
 │  ├── quickwit              (log store)                                  │
 │  ├── nfs-subdir-external   (NFS StorageClass)                           │
-│  ├── flux-web              (GitOps dashboard, flux-operator)             │
-│  └── kyverno               (policy engine)                             │
-│                                                                         │
+│  ├── flux-web              (GitOps dashboard, flux-operator)            │
+│  └── kyverno               (policy engine)                              ││                                                                         │
 │  Image Automation (ImageUpdateAutomation):                              │
 │  ├── backend   (ghcr.io/traipoap/backend → apps/staging)                │
 │  └── frontend  (ghcr.io/traipoap/frontend → apps/staging)               │
@@ -464,11 +463,10 @@ flux bootstrap github \
 ## Maintenance Checklist
 
 - [x] Pin Helm chart versions (currently using `>=` ranges)
-- [ ] Switch from self-signed CA to Let's Encrypt for production domains
 - [ ] Add PodDisruptionBudgets for stateful components (Quickwit, Vector)
 - [ ] Add NetworkPolicies for namespace isolation
 - [ ] Configure Flux alerts (Slack/Email) via `Alert` resources
-- [x] Add Kyverno/OPA policies for security enforcement
-- [ ] Multi-environment promotion (staging → production)
+- [x] Add Kyverno policies for security enforcement
+- [x] Multi-environment promotion (staging → production)
 - [ ] Add Velero backup for etcd + PVCs
 - [x] Add image vulnerability scanning in CI pipeline
