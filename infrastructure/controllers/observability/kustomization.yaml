@@ -5,5 +5,4 @@ resources:
 - grafana/
 - kiali/
 - prometheus/
-- flux-web.yaml
 - flux-operator.yaml
