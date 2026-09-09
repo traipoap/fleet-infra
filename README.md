@@ -464,7 +464,6 @@ flux bootstrap github \
 ## Maintenance Checklist
 
 - [x] Pin Helm chart versions (currently using `>=` ranges)
-- [ ] Switch from self-signed CA to Let's Encrypt for production domains
 - [ ] Add PodDisruptionBudgets for stateful components (Quickwit, Vector)
 - [ ] Add NetworkPolicies for namespace isolation
 - [ ] Configure Flux alerts (Slack/Email) via `Alert` resources
