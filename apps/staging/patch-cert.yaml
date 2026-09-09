@@ -9,3 +9,6 @@ spec:
   secretName: app-traipoap-com-tls
   dnsNames:
   - "app.traipoap.com"
+  issuerRef:
+    name: cluster-ca-issuer
+    kind: ClusterIssuer

@@ -9,5 +9,5 @@ spec:
   # Name ref: points to the ClusterIssuer "letsencrypt-cloudflare",
   # declared in this same directory (letsencrypt-dns01-cloudflare.yaml).
   issuerRef:
-    name: letsencrypt-cloudflare
+    name: cluster-ca-issuer
     kind: ClusterIssuer
