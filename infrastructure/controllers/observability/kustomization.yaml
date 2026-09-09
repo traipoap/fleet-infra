@@ -5,4 +5,5 @@ resources:
 - grafana/
 - kiali/
 - prometheus/
-- flux-operator.yaml
+- https://github.com/controlplaneio-fluxcd/flux-operator/releases/latest/download/install.yaml
+- flux-web.yaml
