@@ -37,7 +37,7 @@ Part of the [gitops-platform](https://github.com/traipoap/gitops-platform) proje
 │  ├── vector                (log shipper)                                │
 │  ├── quickwit              (log store)                                  │
 │  ├── nfs-subdir-external   (NFS StorageClass)                           │
-│  ├── weave-gitops          (GitOps dashboard)                           │
+│  ├── flux-web              (GitOps dashboard, flux-operator)             │
 │  └── kyverno               (policy engine)                             │
 │                                                                         │
 │  Image Automation (ImageUpdateAutomation):                              │
@@ -55,7 +55,7 @@ Part of the [gitops-platform](https://github.com/traipoap/gitops-platform) proje
 │  security/           cert-manager, External Secrets, Kyverno            │
 │  lumina/             App: frontend, backend, Gateway, HTTPRoute         │
 │                      Image Automation CRDs                              │
-│  flux-system/        Flux controllers, Weave GitOps Dashboard           │
+│  flux-system/        Flux controllers, Flux Web (flux-operator)         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -140,8 +140,7 @@ This allows:
 │   │   │   ├── kustomization.yaml
 │   │   │   ├── nfs-external-secret.yaml # NFS credentials
 │   │   │   ├── quickwit-external-secret.yaml  # Quickwit credentials
-│   │   │   ├── registry-external-secret.yaml  # Registry creds → K8s Secret
-│   │   │   └── weave-external-secret.yaml  # Weave credentials
+│   │   │   └── registry-external-secret.yaml  # Registry creds → K8s Secret
 │   │   └── quickwit/                # Quickwit index bootstrap (namespace: logging)
 │   │       ├── kustomization.yaml
 │   │       ├── quickwit-cm.yaml         # ConfigMap: syslogs index schema
@@ -160,9 +159,9 @@ This allows:
 │       │   ├── namespace.yaml
 │       │   └── nfs-subdir-external-provisioner.yaml
 │       ├── observability/           # Monitoring
-│       │   ├── kustomization.yaml
+│       │   ├── kustomization.yaml   # Imports flux-operator install.yaml (URL) + flux-web.yaml
 │       │   ├── observability.yaml   # Namespace
-│       │   ├── weave-gitops.yaml    # Weave GitOps dashboard (flux-system)
+│       │   ├── flux-web.yaml        # Flux Web ResourceSet (flux-operator chart, ns: flux-system)
 │       │   ├── prometheus/          # Istio Prometheus addon (istio-system)
 │       │   ├── grafana/             # Istio Grafana addon + Quickwit datasource (istio-system)
 │       │   └── kiali/               # Istio Kiali addon
@@ -198,7 +197,7 @@ This allows:
 | `HelmRepository` | `vector-repo` | `logging` | Vector charts (`helm.vector.dev`) |
 | `HelmRepository` | `quickwit-repo` | `logging` | Quickwit charts (`helm.quickwit.io`) |
 | `HelmRepository` | `nfs-subdir-external-provisioner` | `networking` | NFS provisioner (`kubernetes-sigs.github.io`) |
-| `HelmRepository` | `ww-gitops` | `flux-system` | Weave GitOps OCI charts (`ghcr.io/weaveworks/charts`) |
+| `OCIRepository` | (created by `ResourceSet` `flux-web`) | `flux-system` | flux-operator chart (`ghcr.io/controlplaneio-fluxcd/charts/flux-operator`) |
 | `HelmRepository` | `kyverno` | `security` | Kyverno charts (`kyverno.github.io/kyverno`) |
 
 ### Artifacts (via ArtifactGenerator)
@@ -213,7 +212,7 @@ This allows:
 | # | Name | Source | Path | Purpose |
 |---|------|--------|------|---------|
 | 1 | `flux-system` | `GitRepository` | `./clusters/staging` | Bootstrap Flux + ArtifactGenerator |
-| 2 | `infra-controllers` | `ExternalArtifact` | `./controllers` | HelmReleases: cert-manager, external-secrets, vector, quickwit, nfs, weave |
+| 2 | `infra-controllers` | `ExternalArtifact` | `./controllers` | HelmReleases: cert-manager, external-secrets, vector, quickwit, nfs, flux-web (flux-operator) |
 | 3 | `infra-configs` | `ExternalArtifact` | `./configs` | ClusterIssuers, ExternalSecrets |
 | 4 | `apps` | `ExternalArtifact` | `./staging` | App deployments + overlays (`dependsOn: infra-configs`) |
 | 5 | `image-automation` | `GitRepository` | `./clusters/staging/image-automation` | ImageRepository + ImagePolicy + ImageUpdateAutomation |
@@ -227,7 +226,7 @@ This allows:
 | `vector` | `logging` | `vector` | `vector-repo` (helm.vector.dev) | Agent mode, syslog (NodePort 30514/30515) + k8s → Quickwit |
 | `quickwit` | `logging` | `quickwit` | `quickwit-repo` (helm.quickwit.io) | `valuesFrom: quickwit-s3-secret-values` |
 | `nfs-subdir-external-provisioner` | `networking` | `nfs-subdir-external-provisioner` | `nfs-subdir-external-provisioner` | `valuesFrom: nfs-provisioner-secret-values` |
-| `ww-gitops` | `flux-system` | `weave-gitops` | `ww-gitops` | `valuesFrom: weave-secret-values` |
+| `flux-web` | `flux-system` | `flux-operator` (OCI) | `OCIRepository` (`ghcr.io/controlplaneio-fluxcd/charts/flux-operator`) | `releaseName: flux-web`, `installCRDs: false`, `web.serverOnly: true`, SA `flux-operator` |
 | `kyverno` | `security` | `kyverno` | `kyverno` | Policy engine (applies `require-requests.yaml`) |
 
 ### Image Automation (ImageUpdateAutomation)
@@ -248,7 +247,8 @@ This allows:
 | `ExternalSecret` | `github-registry-secret` | `dev/github-registry/frontend-backend` | `github-registry` (dockerconfigjson) | GHCR image pull creds |
 | `ExternalSecret` | `nfs-provisioner-values` | `dev/nfs/config` → `SERVER`, `PATH` | `nfs-provisioner-secret-values` (values.yaml) | NFS server endpoint |
 | `ExternalSecret` | `quickwit-s3-values` | `dev/lumina/quickwit/s3` → `access_key_id`, `secret_access_key`, `endpoint` | `quickwit-s3-secret-values` (values.yaml) | Quickwit S3/Garage storage |
-| `ExternalSecret` | `weave-values` | `dev/flux-system/weave` → `username`, `passwordHash` | `weave-secret-values` (values.yaml) | Weave GitOps admin |
+
+> Flux Web (flux-operator) runs with `web.serverOnly: true` — no admin credentials required (Weave GitOps `weave-secret-values` no longer needed).
 
 ### Security & Cost Optimization
 
@@ -309,7 +309,7 @@ app.example.com
 
 - **JWT_SECRET**: AWS SM (`dev/backend/jwt`) → K8s Secret `jwt-secret` → env var on backend
 - **Registry credentials**: AWS SM (`dev/github-registry/frontend-backend`) → K8s Secret `github-registry` (dockerconfigjson template) → `imagePullSecrets`
-- **Weave GitOps admin**: K8s Secret `weave-secret-values` → HelmRelease `valuesFrom` (no hardcoded passwords)
+- **Flux Web (flux-operator)**: no admin credentials — deployed with `web.serverOnly: true`
 
 ---
 
@@ -322,7 +322,7 @@ app.example.com
 | Kiali | `istio-system` | `kubectl -n istio-system port-forward svc/kiali 20001:20001` |
 | Quickwit | `logging` | `kubectl -n logging port-forward svc/quickwit-searcher 7280:7280` |
 | Vector | `logging` | syslog NodePort: `30514` (TCP) / `30515` (UDP) |
-| Weave GitOps | `flux-system` | `kubectl -n flux-system port-forward svc/ww-gitops 8080:8080` |
+| Flux Web | `flux-system` | `kubectl -n flux-system port-forward svc/flux-web 8080:8080` |
 
 ### Logging Pipeline
 
