@@ -5,8 +5,7 @@ metadata:
   annotations:
     # Name ref: value must be the name of a ClusterIssuer.
     # The CA issuer is named "cluster-ca-issuer" (infrastructure/configs/cert-manager/ca-issuer.yaml);
-    # "cluster-ca" is only the name of the CA Certificate itself.
-    cert-manager.io/cluster-issuer: "cluster-ca"
+    cert-manager.io/cluster-issuer: "cluster-ca-issuer"
 spec:
   gatewayClassName: istio
   listeners:
