@@ -29,7 +29,7 @@ Part of the [gitops-platform](https://github.com/traipoap/gitops-platform) proje
 │  Kustomization: infra-controllers  ──►  ./controllers                   │
 │  Kustomization: infra-configs      ──►  ./configs                       │
 │  Kustomization: apps               ──►  ./staging                       │
-│  Kustomization: image-automation   ──►  clusters/staging/image-automation │
+│  Kustomization: image-automation   ──►  clusters/<env>/image-automation │
 │                                                                         │
 │  Controllers (via HelmReleases):                                        │
 │  ├── cert-manager          (jetstack OCI)                               │
@@ -65,7 +65,8 @@ Flux's **ArtifactGenerator** packages subdirectories into artifacts, and Kustomi
 
 ```
 infrastructure/**  ──►  Artifact: infrastructure  ──►  Kustomization: infra-controllers
-                                              └─────►  Kustomization: infra-configs
+                                              ├──►  Kustomization: infra-configs
+                                              └──►  Kustomization: infra-services
 apps/base/**       ──►  Artifact: apps          ──►  Kustomization: apps
 apps/staging/**    ──┘
 ```
@@ -125,7 +126,7 @@ This allows:
 │       └── artifacts.yaml           # ArtifactGenerator (packages infra + apps)
 │
 ├── infrastructure/                  # Platform components
-│   ├── kustomization.yaml           # Aggregates: configs + controllers
+│   ├── kustomization.yaml           # Aggregates: controllers + services + configs
 │   ├── configs/                     # Plain YAML configs (no Helm)
 │   │   ├── kustomization.yaml
 │   │   ├── cert-manager/            # ClusterIssuers (CA, Let's Encrypt, wildcard)
@@ -146,31 +147,37 @@ This allows:
 │   │       ├── quickwit-cm.yaml         # ConfigMap: syslogs index schema
 │   │       └── job-create-index.yaml    # Job: create `syslogs` index (idempotent)
 │   │   
-│   └── controllers/                 # Helm-managed controllers
-│       ├── kustomization.yaml       # Aggregates: logging, networking, observability, security
+│   ├── controllers/                 # Base controllers (no infra-configs Secret dependency)
+│   │   ├── kustomization.yaml       # Aggregates: logging, networking, observability, security
+│   │   ├── logging/                 # Namespace only (log pipeline HRs → services/logging)
+│   │   │   ├── kustomization.yaml
+│   │   │   ├── namespace.yaml
+│   │   │   └── otel-config.yaml         # OTel Collector (alternative)
+│   │   ├── networking/              # Namespace only (NFS HR → services/networking)
+│   │   │   ├── kustomization.yaml
+│   │   │   └── namespace.yaml
+│   │   ├── observability/           # Monitoring
+│   │   │   ├── kustomization.yaml   # Imports flux-operator install.yaml (URL) + flux-web.yaml
+│   │   │   ├── observability.yaml   # Namespace
+│   │   │   ├── flux-web.yaml        # Flux Web ResourceSet (flux-operator chart, ns: flux-system)
+│   │   │   ├── prometheus/          # Istio Prometheus addon (istio-system)
+│   │   │   ├── grafana/             # Istio Grafana addon + Quickwit datasource (istio-system)
+│   │   │   └── kiali/               # Istio Kiali addon
+│   │   └── security/                # Security controllers (namespace: security)
+│   │       ├── kustomization.yaml
+│   │       ├── namespace.yaml
+│   │       ├── cert-manager.yaml    # HelmRepository (jetstack OCI) + HelmRelease
+│   │       ├── external-secrets.yaml # HelmRelease (external-secrets.io, AWS SM auth via awssm-secret)
+│   │       └── kyverno.yaml         # HelmRepository + HelmRelease (Kyverno policy engine)
+│   └── services/                    # Secret-dependent pipeline/storage (Kustomization: infra-services)
+│       ├── kustomization.yaml       # Aggregates: logging, networking
 │       ├── logging/                 # Log pipeline (namespace: logging)
 │       │   ├── kustomization.yaml   # Patches Vector Service → NodePort 30514 (TCP) / 30515 (UDP)
-│       │   ├── namespace.yaml
-│       │   ├── otel-config.yaml         # OTel Collector (alternative)
-│       │   ├── vector.yaml          # HelmRepository (helm.vector.dev) + HelmRelease (Agent, k8s+syslog → Quickwit)
+│       │   ├── vector.yaml          # HelmRepository (helm.vector.dev) + HelmRelease (dependsOn quickwit)
 │       │   └── quickwit.yaml        # HelmRepository (helm.quickwit.io) + HelmRelease (valuesFrom: S3 secret)
-│       ├── networking/              # Storage (namespace: networking)
-│       │   ├── kustomization.yaml
-│       │   ├── namespace.yaml
-│       │   └── nfs-subdir-external-provisioner.yaml
-│       ├── observability/           # Monitoring
-│       │   ├── kustomization.yaml   # Imports flux-operator install.yaml (URL) + flux-web.yaml
-│       │   ├── observability.yaml   # Namespace
-│       │   ├── flux-web.yaml        # Flux Web ResourceSet (flux-operator chart, ns: flux-system)
-│       │   ├── prometheus/          # Istio Prometheus addon (istio-system)
-│       │   ├── grafana/             # Istio Grafana addon + Quickwit datasource (istio-system)
-│       │   └── kiali/               # Istio Kiali addon
-│       └── security/                # Security controllers (namespace: security)
+│       └── networking/              # Storage (namespace: networking)
 │           ├── kustomization.yaml
-│           ├── namespace.yaml
-│           ├── cert-manager.yaml    # HelmRepository (jetstack OCI) + HelmRelease
-│           ├── external-secrets.yaml # HelmRelease (external-secrets.io, AWS SM auth via awssm-secret)
-│           └── kyverno.yaml         # HelmRepository + HelmRelease (Kyverno policy engine)
+│           └── nfs-subdir-external-provisioner.yaml
 │
 ├── scripts/
 │   └── validate.sh                  # flux-schema validation (YAML + kustomize + helm)
@@ -212,10 +219,11 @@ This allows:
 | # | Name | Source | Path | Purpose |
 |---|------|--------|------|---------|
 | 1 | `flux-system` | `GitRepository` | `./clusters/staging` | Bootstrap Flux + ArtifactGenerator |
-| 2 | `infra-controllers` | `ExternalArtifact` | `./controllers` | HelmReleases: cert-manager, external-secrets, vector, quickwit, nfs, flux-web (flux-operator) |
-| 3 | `infra-configs` | `ExternalArtifact` | `./configs` | ClusterIssuers, ExternalSecrets |
-| 4 | `apps` | `ExternalArtifact` | `./staging` | App deployments + overlays (`dependsOn: infra-configs`) |
-| 5 | `image-automation` | `GitRepository` | `./clusters/staging/image-automation` | ImageRepository + ImagePolicy + ImageUpdateAutomation |
+| 2 | `infra-controllers` | `ExternalArtifact` | `./controllers` | Base HelmReleases: cert-manager, external-secrets, kyverno, flux-web (flux-operator) + all namespaces (`wait: true`) |
+| 3 | `infra-configs` | `ExternalArtifact` | `./configs` | ClusterIssuers, ExternalSecrets, Quickwit index Job (`dependsOn: infra-controllers`) |
+| 4 | `infra-services` | `ExternalArtifact` | `./services` | HelmReleases: vector, quickwit, nfs-subdir-external-provisioner (`dependsOn: infra-configs`, `wait: true`) |
+| 5 | `apps` | `ExternalArtifact` | `./staging` | App deployments + overlays (`dependsOn: infra-services`) |
+| 6 | `image-automation` | `GitRepository` | `./clusters/staging/image-automation` | ImageRepository + ImagePolicy + ImageUpdateAutomation |
 
 ### HelmReleases
 
@@ -223,7 +231,7 @@ This allows:
 |------|-----------|-------|--------|-------|
 | `cert-manager` | `security` | `cert-manager` (jetstack OCI) | `jetstack` | `installCRDs: true` |
 | `external-secrets` | `security` | `external-secrets` | `external-secrets` | `crds: Create`, AWS auth via `awssm-secret` |
-| `vector` | `logging` | `vector` | `vector-repo` (helm.vector.dev) | Agent mode, syslog (NodePort 30514/30515) + k8s → Quickwit |
+| `vector` | `logging` | `vector` | `vector-repo` (helm.vector.dev) | Agent mode, syslog (NodePort 30514/30515) + k8s → Quickwit (`dependsOn: quickwit`) |
 | `quickwit` | `logging` | `quickwit` | `quickwit-repo` (helm.quickwit.io) | `valuesFrom: quickwit-s3-secret-values` |
 | `nfs-subdir-external-provisioner` | `networking` | `nfs-subdir-external-provisioner` | `nfs-subdir-external-provisioner` | `valuesFrom: nfs-provisioner-secret-values` |
 | `flux-web` | `flux-system` | `flux-operator` (OCI) | `OCIRepository` (`ghcr.io/controlplaneio-fluxcd/charts/flux-operator`) | `releaseName: flux-web`, `installCRDs: false`, `web.serverOnly: true`, SA `flux-operator` |
@@ -248,7 +256,7 @@ This allows:
 | `ExternalSecret` | `nfs-provisioner-values` | `dev/nfs/config` → `SERVER`, `PATH` | `nfs-provisioner-secret-values` (values.yaml) | NFS server endpoint |
 | `ExternalSecret` | `quickwit-s3-values` | `dev/lumina/quickwit/s3` → `access_key_id`, `secret_access_key`, `endpoint` | `quickwit-s3-secret-values` (values.yaml) | Quickwit S3/Garage storage |
 
-> Flux Web (flux-operator) runs with `web.serverOnly: true` — no admin credentials required (Weave GitOps `weave-secret-values` no longer needed).
+> Flux Web (flux-operator) runs with `web.serverOnly: true` — no admin credentials or secret values required.
 
 ### Security & Cost Optimization
 

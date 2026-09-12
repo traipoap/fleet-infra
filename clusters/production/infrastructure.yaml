@@ -13,6 +13,9 @@ spec:
   sourceRef:
     kind: ExternalArtifact
     name: infrastructure
+  # Base controllers only (external-secrets, cert-manager, kyverno, flux-operator)
+  # + all namespaces. None of these need Secrets from infra-configs, so waiting
+  # (wait: true) is safe and does NOT deadlock on the log/storage pipeline.
   path: ./controllers
   prune: true
   wait: true
@@ -23,14 +26,42 @@ metadata:
   name: infra-configs
   namespace: flux-system
 spec:
+  # Apply AFTER the base controllers are Ready, so the ExternalSecrets +
+  # ClusterIssuers have their CRDs (external-secrets, cert-manager) available.
+  dependsOn:
+    - name: infra-controllers
   interval: 1h
   retryInterval: 2m
   timeout: 5m
   sourceRef:
     kind: ExternalArtifact
     name: infrastructure
+  # Do NOT wait: the quickwit index Job self-waits on the Quickwit searcher,
+  # which only exists once infra-services is applied.
   path: ./configs
   prune: true
+  wait: false
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-services
+  namespace: flux-system
+spec:
+  # Apply AFTER infra-configs, so the ExternalSecrets have produced the
+  # values Secrets (quickwit-s3-secret-values, nfs-provisioner-secret-values)
+  # that the HelmReleases below consume via spec.valuesFrom.
+  dependsOn:
+    - name: infra-configs
+  interval: 1h
+  retryInterval: 2m
+  timeout: 5m
+  sourceRef:
+    kind: ExternalArtifact
+    name: infrastructure
+  path: ./services
+  prune: true
+  wait: true
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

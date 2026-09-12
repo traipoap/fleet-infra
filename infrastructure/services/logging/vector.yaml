@@ -13,6 +13,10 @@ kind: HelmRelease
 metadata:
   name: vector
 spec:
+  # Ship logs only after the Quickwit sink is up (avoids crash-loop / retry spam
+  # during bootstrap). Enforced by the Flux HelmRelease dependency graph.
+  dependsOn:
+    - name: quickwit
   chart:
     spec:
       chart: vector

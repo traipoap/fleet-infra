@@ -5,8 +5,12 @@ metadata:
   name: apps
   namespace: flux-system
 spec:
+  # Depends on the FULL infra chain (transitively: infra-services ->
+  # infra-configs -> infra-controllers). By the time apps reconciles, the
+  # external-secrets controller, cert-manager, and the NFS StorageClass are all
+  # Ready, so the app ExternalSecrets, TLS Certificate, and PVCs bind cleanly.
   dependsOn:
-    - name: infra-configs
+    - name: infra-services
   interval: 1h
   retryInterval: 2m
   timeout: 5m
