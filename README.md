@@ -53,7 +53,7 @@ Part of the [gitops-platform](https://github.com/traipoap/gitops-platform) proje
 │  logging/            Vector + Quickwit (log pipeline)                   │
 │  networking/         NFS Subdir External Provisioner                    │
 │  security/           cert-manager, External Secrets, Kyverno            │
-│  lumina/             App: frontend, backend, Gateway, HTTPRoute         │
+│  <env>/             App: frontend, backend, Gateway, HTTPRoute         │
 │                      Image Automation CRDs                              │
 │  flux-system/        Flux controllers, Flux Web (flux-operator)         │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -87,7 +87,7 @@ This allows:
 ├── apps/                            # Application manifests (shared + per-env overlays)
 │   ├── base/                        # Shared: deployments, services, gateway, routing
 │   │   ├── kustomization.yaml
-│   │   ├── namespace.yaml           # lumina (Istio ambient mode)
+│   │   ├── namespace.yaml           # <env> (Istio ambient mode)
 │   │   ├── configmap.yaml           # Shared env config
 │   │   ├── backend-deployment.yaml  # Go API server (port 8080)
 │   │   ├── backend-service.yaml     # ClusterIP → 8080
@@ -244,7 +244,7 @@ This allows:
 | `backend` | `ghcr.io/traipoap/backend` | semver `>=0.0.0` | `./apps/staging` | Setters |
 | `frontend` | `ghcr.io/traipoap/frontend` | semver `>=0.0.0` | `./apps/staging` | Setters |
 
-> CRs live in `clusters/staging/image-automation/` (namespace: `lumina`). Flux auto-updates image tags in `apps/staging/` and commits as `fluxcdbot`.
+> CRs live in `clusters/staging/image-automation/` (namespace: `<env>`). Flux auto-updates image tags in `apps/staging/` and commits as `fluxcdbot`.
 
 ### External Secrets
 
@@ -254,7 +254,7 @@ This allows:
 | `ExternalSecret` | `backend-jwt-secret` | `dev/backend/jwt` → `JWT_SECRET` | `jwt-secret` | JWT for backend |
 | `ExternalSecret` | `github-registry-secret` | `dev/github-registry/frontend-backend` | `github-registry` (dockerconfigjson) | GHCR image pull creds |
 | `ExternalSecret` | `nfs-provisioner-values` | `dev/nfs/config` → `SERVER`, `PATH` | `nfs-provisioner-secret-values` (values.yaml) | NFS server endpoint |
-| `ExternalSecret` | `quickwit-s3-values` | `dev/lumina/quickwit/s3` → `access_key_id`, `secret_access_key`, `endpoint` | `quickwit-s3-secret-values` (values.yaml) | Quickwit S3/Garage storage |
+| `ExternalSecret` | `quickwit-s3-values` | `dev/<env>/quickwit/s3` → `access_key_id`, `secret_access_key`, `endpoint` | `quickwit-s3-secret-values` (values.yaml) | Quickwit S3/Garage storage |
 
 > Flux Web (flux-operator) runs with `web.serverOnly: true` — no admin credentials or secret values required.
 
@@ -272,7 +272,7 @@ This allows:
 | Namespace | Default Request | Default Limit |
 |-----------|----------------|---------------|
 | `istio-system` | 50m | 500m |
-| All others (`cert-manager`, `external-secrets`, `flux-system`, `kube-system`, `lumina`, `nfs`) | 10m | 100m |
+| All others (`cert-manager`, `external-secrets`, `flux-system`, `kube-system`, `<env>`, `nfs`) | 10m | 100m |
 
 **Kyverno mutation (applies to all Pods without explicit resource specs):**
 ```
@@ -347,7 +347,7 @@ Pod logs ──► Vector (k8s_logs + syslog) ──► Quickwit (HTTP sink)
 ghcr.io/traipoap/backend:0.0.47 pushed
     │
     ▼
-ImageRepository (poll every 5m, namespace: lumina)
+ImageRepository (poll every 5m, namespace: <env>)
     │
     ▼
 ImagePolicy (semver: pick highest ≥ 0.0.0)
@@ -394,8 +394,8 @@ flux get all -A
 kubectl get kustomization -n flux-system
 kubectl get helmrelease -A
 kubectl get artifacts -n flux-system
-kubectl get imageautomations -n lumina
-kubectl get externalsecrets -n lumina
+kubectl get imageautomations -n <env>
+kubectl get externalsecrets -n <env>
 kubectl get pods -A
 ```
 
